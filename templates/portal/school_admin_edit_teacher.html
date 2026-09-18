@@ -1,0 +1,154 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Teacher | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/teachers/" class="admin-link">Teachers</a>
+        <a href="/school-admin/dashboard/" class="admin-link">Dashboard</a>
+    </div>
+</header>
+
+<main class="hero">
+
+    <section class="hero-content" style="max-width:800px;">
+
+        <span class="hero-badge">
+            TEACHER MANAGEMENT
+        </span>
+
+        <h1>Edit Teacher</h1>
+
+        <p>
+            Update teacher information or reassign the teacher to another class.
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="child-card" style="margin-top:15px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="child-card" style="margin-top:25px;">
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div style="
+                    display:grid;
+                    grid-template-columns:repeat(2, minmax(0, 1fr));
+                    gap:18px;
+                ">
+
+                    <div>
+                        <label><strong>First Name</strong></label>
+                        <input
+                            type="text"
+                            name="first_name"
+                            value="{{ teacher.first_name }}"
+                            required
+                            style="width:100%; padding:14px; margin-top:7px;"
+                        >
+                    </div>
+
+                    <div>
+                        <label><strong>Surname</strong></label>
+                        <input
+                            type="text"
+                            name="surname"
+                            value="{{ teacher.last_name }}"
+                            required
+                            style="width:100%; padding:14px; margin-top:7px;"
+                        >
+                    </div>
+
+                    <div>
+                        <label><strong>Phone Number</strong></label>
+                        <input
+                            type="text"
+                            name="phone"
+                            value="{{ teacher.phone }}"
+                            required
+                            style="width:100%; padding:14px; margin-top:7px;"
+                        >
+                    </div>
+
+                    <div>
+                        <label><strong>Assigned Class</strong></label>
+
+                        <select
+                            name="school_class"
+                            required
+                            style="width:100%; padding:14px; margin-top:7px;"
+                        >
+                            <option value="">Select class</option>
+
+                            {% for class_item in classes %}
+                                <option
+                                    value="{{ class_item.id }}"
+                                    {% if current_assignment and current_assignment.school_class.id == class_item.id %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ class_item.display_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div style="margin-top:25px; display:flex; gap:10px; flex-wrap:wrap;">
+
+                    <button
+                        type="submit"
+                        class="portal-button"
+                        style="border:none; cursor:pointer;"
+                    >
+                        Save Changes
+                    </button>
+
+                    <a
+                        href="/school-admin/teachers/"
+                        class="portal-button secondary"
+                    >
+                        Cancel
+                    </a>
+
+                </div>
+
+                <p style="margin-top:18px;">
+                    Changing the teacher's surname does not automatically change
+                    their password.
+                </p>
+
+            </form>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>

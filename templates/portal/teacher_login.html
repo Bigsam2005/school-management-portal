@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Login</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        TEACHER PORTAL
+    </div>
+
+    {% if school %}
+<a href="{% url 'school_portal' school.slug %}" class="admin-link">
+{% else %}
+<a href="/" class="admin-link">
+{% endif %}
+        Back Home
+    </a>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            TEACHER PORTAL
+        </span>
+
+        <h1>Teacher Login</h1>
+
+        <p>
+            Log in with your registered phone number and password.
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="
+                    padding:12px 16px;
+                    margin:18px 0;
+                    border:1px solid #dc3545;
+                    border-radius:8px;
+                    background:#fff5f5;
+                    color:#b42318;
+                    font-weight:600;
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="login-field">
+                <label for="phone">
+                    Phone Number
+                </label>
+
+                <input
+                    type="text"
+                    id="phone"
+                    name="phone"
+                    placeholder="e.g. 08142327551"
+                    required
+                >
+            </div>
+
+            <div class="login-field">
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="portal-button login-button"
+            >
+                Login
+            </button>
+        </form>
+
+    </section>
+</main>
+
+</body>
+</html>

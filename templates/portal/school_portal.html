@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ school.name }} | School Portal</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+
+<body style="background:#f4f7fb;">
+
+<main class="hero">
+    <section class="hero-content" style="text-align:center;">
+
+        {% if school.logo %}
+            <img
+                src="{{ school.logo.url }}"
+                alt="{{ school.name }}"
+                style="max-height:100px; max-width:180px; margin-bottom:20px;"
+            >
+        {% endif %}
+
+        <span class="hero-badge">SCHOOL PORTAL</span>
+
+        <h1>{{ school.name }}</h1>
+
+        {% if school.motto %}
+            <p>{{ school.motto }}</p>
+        {% endif %}
+
+        <div style="
+            display:grid;
+            gap:14px;
+            max-width:420px;
+            margin:30px auto 0;
+        ">
+            <a href="{% url 'school_admin_login_school' school.slug %}" class="portal-button">
+                School Admin
+            </a>
+
+            <a href="{% url 'teacher_login_school' school.slug %}" class="portal-button secondary">
+                Teacher
+            </a>
+
+            <a href="{% url 'parent_login_school' school.slug %}" class="portal-button secondary">
+                Parent
+            </a>
+        </div>
+
+    </section>
+</main>
+
+</body>
+</html>

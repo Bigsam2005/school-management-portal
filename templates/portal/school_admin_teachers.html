@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachers | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">{{ school.name }}</div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/dashboard/" class="admin-link">Dashboard</a>
+        <a href="/school-admin/logout/" class="admin-link">Logout</a>
+    </div>
+</header>
+
+<main class="hero">
+
+    <section class="hero-content">
+
+        <span class="hero-badge">TEACHER MANAGEMENT</span>
+
+        <h1>Teachers</h1>
+
+        <p>
+            Create teacher accounts and assign class teachers.
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="child-card" style="margin:15px 0;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="child-card" style="margin-top:25px;">
+
+            <h2>Assign Teacher</h2>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div style="
+                    display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+                    gap:15px;
+                    margin-top:20px;
+                ">
+
+                    <div>
+                        <label><strong>First Name</strong></label>
+                        <input
+                            type="text"
+                            name="first_name"
+                            required
+                            placeholder="Teacher first name"
+                            style="width:100%;padding:14px;margin-top:7px;"
+                        >
+                    </div>
+
+                    <div>
+                        <label><strong>Surname</strong></label>
+                        <input
+                            type="text"
+                            name="surname"
+                            required
+                            placeholder="Teacher surname"
+                            style="width:100%;padding:14px;margin-top:7px;"
+                        >
+                    </div>
+
+                    <div>
+                        <label><strong>Phone Number</strong></label>
+                        <input
+                            type="text"
+                            name="phone"
+                            required
+                            placeholder="080..."
+                            style="width:100%;padding:14px;margin-top:7px;"
+                        >
+                    </div>
+
+                    <div>
+                        <label><strong>Assign Class</strong></label>
+                        <select
+                            name="school_class"
+                            required
+                            style="width:100%;padding:14px;margin-top:7px;"
+                        >
+                            <option value="">Select class</option>
+
+                            {% for class in classes %}
+                                <option value="{{ class.id }}">
+                                    {{ class.display_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="portal-button"
+                    style="margin-top:20px;"
+                >
+                    Save Teacher
+                </button>
+
+            </form>
+
+            <p style="margin-top:15px;">
+                New teachers use their surname as their temporary password.
+            </p>
+
+        </div>
+
+        <div class="child-card" style="margin-top:25px;">
+
+            <h2>Assigned Teachers</h2>
+
+            {% if assignments %}
+
+                <div style="overflow-x:auto; margin-top:20px;">
+                    <table style="width:100%; border-collapse:collapse;">
+
+                        <thead>
+                            <tr style="text-align:left;">
+                                <th style="padding:12px;">Teacher</th>
+                                <th style="padding:12px;">Phone</th>
+                                <th style="padding:12px;">Class</th>
+                                <th style="padding:12px;">Status</th>
+<th style="padding:12px;">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for assignment in assignments %}
+                                <tr style="border-top:1px solid #ddd;">
+
+                                    <td style="padding:12px;">
+                                        <strong>
+                                            {{ assignment.teacher_membership.user.first_name }}
+                                            {{ assignment.teacher_membership.user.last_name }}
+                                        </strong>
+                                    </td>
+
+                                    <td style="padding:12px;">
+                                        {{ assignment.teacher_membership.user.phone }}
+                                    </td>
+
+                                    <td style="padding:12px;">
+                                        {{ assignment.school_class.display_name }}
+                                    </td>
+
+                                    <td style="padding:12px;">
+                                        {% if assignment.is_active %}
+                                            <strong style="color:green;">Active</strong>
+                                        {% else %}
+                                            <span style="color:#777;">Previous</span>
+                                        {% endif %}
+                                    </td>
+
+                                
+                    <td style="padding:12px;">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+                            <a href="/school-admin/teachers/{{ assignment.teacher_membership.id }}/edit/"
+                               class="portal-button secondary"
+                               style="padding:8px 12px;">
+                                Edit
+                            </a>
+
+                            {% if assignment.teacher_membership.is_active and assignment.teacher_membership.user.is_active %}
+
+                                <a href="/school-admin/teachers/{{ assignment.teacher_membership.id }}/deactivate/"
+                                   class="portal-button secondary"
+                                   style="padding:8px 12px;">
+                                    Deactivate
+                                </a>
+
+                            {% else %}
+
+                                <a href="/school-admin/teachers/{{ assignment.teacher_membership.id }}/reactivate/"
+                                   class="portal-button secondary"
+                                   style="padding:8px 12px;">
+                                    Reactivate
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+</tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            {% else %}
+
+                <p style="margin-top:15px;">
+                    No teachers have been assigned yet.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>

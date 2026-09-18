@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Subjects | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            SUBJECT MANAGEMENT
+        </span>
+
+        <h1>Manage Subjects</h1>
+
+        <p>
+            Create subjects and assign them to the classes that offer them.
+        </p>
+
+        <div style="margin:25px 0; display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="/school-admin/subjects/add/" class="portal-button">
+                Add Subject
+            </a>
+
+            <form method="post" action="/school-admin/subjects/generate/" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="portal-button secondary">
+                    Generate Default Subjects
+                </button>
+            </form>
+        </div>
+
+        <form method="get" style="margin:20px 0;">
+            <div class="login-field">
+                <label for="q">Search Subject</label>
+
+                <input
+                    type="text"
+                    id="q"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Search by subject name or code"
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="portal-button login-button"
+            >
+                Search
+            </button>
+        </form>
+
+        {% if subjects %}
+
+            {% for subject in subjects %}
+                <div class="child-card" style="margin-top:15px; text-align:left;">
+
+                    <h3>{{ subject.name }}</h3>
+
+                    {% if subject.code %}
+                        <p>
+                            <strong>Code:</strong>
+                            {{ subject.code }}
+                        </p>
+                    {% endif %}
+                    <div style="margin:12px 0;">
+                        <a
+                            href="/school-admin/subjects/{{ subject.id }}/edit/"
+                            class="portal-button secondary"
+                        >
+                            Edit Subject
+                        </a>
+                    </div>
+
+                    <p>
+                        <strong>Classes:</strong>
+                    </p>
+
+                    {% if subject.classes.all %}
+                        <div style="margin-top:8px;">
+                            {% for class in subject.classes.all %}
+                                <span style="
+                                    display:inline-block;
+                                    margin:4px;
+                                    padding:6px 10px;
+                                    border-radius:999px;
+                                    background:#eef4ff;
+                                ">
+                                    {{ class.display_name }}
+                                </span>
+                            {% empty %}
+                                <span>No classes assigned yet.</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+        {% else %}
+
+            <div class="child-card">
+                <h3>No Subjects Yet</h3>
+                <p>
+                    Add the school's first subject to get started.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

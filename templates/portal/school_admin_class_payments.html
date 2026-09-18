@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ school_class.display_name }} Payments | {{ school.name }}
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #0f172a;
+        }
+
+        .topbar {
+            background: var(--school-primary);
+            color: white;
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar h2 {
+            margin: 0;
+        }
+
+        .topbar-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .topbar a {
+            color: white;
+            text-decoration: none;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 10px 16px;
+        }
+
+        .page {
+            width: min(1200px, 94%);
+            margin: 35px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 27px;
+            border-radius: 18px;
+            margin-bottom: 23px;
+            box-shadow: 0 8px 25px rgba(15,23,42,.06);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #eaf1ff;
+            color: #163f77;
+            padding: 8px 15px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .period {
+            margin-top: 18px;
+            background: #f8fafc;
+            border: 1px solid #dbe3ef;
+            padding: 16px;
+            border-radius: 11px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+            gap: 13px;
+        }
+
+        .summary {
+            border: 1px solid #dbe3ef;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 17px;
+        }
+
+        .summary small {
+            color: #64748b;
+        }
+
+        .summary strong {
+            display: block;
+            font-size: 21px;
+            margin-top: 7px;
+        }
+
+        .paid-text {
+            color: #15803d;
+        }
+
+        .partial-text {
+            color: #b45309;
+        }
+
+        .unpaid-text {
+            color: #b91c1c;
+        }
+
+        .tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-size: 15px;
+        }
+
+        .search-form button {
+            border: 0;
+            border-radius: 9px;
+            background: var(--school-primary);
+            color: white;
+            font-weight: 700;
+            padding: 12px 18px;
+            cursor: pointer;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .filter {
+            text-decoration: none;
+            color: var(--school-primary);
+            background: #edf3fb;
+            border-radius: 9px;
+            padding: 10px 13px;
+            font-weight: 700;
+        }
+
+        .filter.active {
+            background: var(--school-primary);
+            color: white;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1050px;
+        }
+
+        th {
+            background: var(--school-primary);
+            color: white;
+            text-align: left;
+            padding: 13px;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .status-paid {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .status-part-paid {
+            color: #92400e;
+            background: #fef3c7;
+        }
+
+        .status-unpaid {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .muted {
+            color: #64748b;
+        }
+
+        .empty {
+            text-align: center;
+            color: #64748b;
+            padding: 35px 15px;
+        }
+
+        @media(max-width: 850px) {
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media(max-width: 550px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 19px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <h2>{{ school.name }}</h2>
+
+    <div class="topbar-links">
+        <a href="{% url 'school_admin_fee_status' %}">
+            Payment Status
+        </a>
+
+        <a href="{% url 'school_admin_dashboard' %}">
+            Dashboard
+        </a>
+    </div>
+
+</div>
+
+
+<div class="page">
+
+    <div class="card">
+
+        <span class="badge">
+            CLASS PAYMENT STATUS
+        </span>
+
+        <h1>
+            {{ school_class.display_name }} Payments
+        </h1>
+
+        <div class="period">
+
+            <strong>Academic Period:</strong>
+            {{ session.name }} — {{ term.get_name_display }}
+
+            &nbsp;&nbsp; | &nbsp;&nbsp;
+
+            <strong>Fee:</strong>
+            ₦{{ fee_amount }}
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="summary-grid">
+
+            <div class="summary">
+                <small>Students</small>
+                <strong>{{ student_count }}</strong>
+            </div>
+
+            <div class="summary">
+                <small>Fully Paid</small>
+                <strong class="paid-text">
+                    {{ fully_paid_count }}
+                </strong>
+            </div>
+
+            <div class="summary">
+                <small>Part-paid</small>
+                <strong class="partial-text">
+                    {{ part_paid_count }}
+                </strong>
+            </div>
+
+            <div class="summary">
+                <small>Unpaid</small>
+                <strong class="unpaid-text">
+                    {{ unpaid_count }}
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="summary-grid">
+
+            <div class="summary">
+                <small>Total Expected</small>
+                <strong>₦{{ expected }}</strong>
+            </div>
+
+            <div class="summary">
+                <small>Total Collected</small>
+                <strong class="paid-text">
+                    ₦{{ collected }}
+                </strong>
+            </div>
+
+            <div class="summary">
+                <small>Total Outstanding</small>
+                <strong class="unpaid-text">
+                    ₦{{ outstanding }}
+                </strong>
+            </div>
+
+            <div class="summary">
+                <small>Class Fee</small>
+                <strong>₦{{ fee_amount }}</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="tools">
+
+            <h2 style="margin:0;">
+                Students
+            </h2>
+
+            <form
+                method="get"
+                class="search-form"
+            >
+                <input
+                    type="hidden"
+                    name="status"
+                    value="{{ status_filter }}"
+                >
+
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    placeholder="Search name or admission number"
+                >
+
+                <button type="submit">
+                    Search
+                </button>
+            </form>
+
+        </div>
+
+
+        <div class="filters">
+
+            <a
+                class="filter {% if status_filter == 'all' %}active{% endif %}"
+                href="?status=all&q={{ search_query|urlencode }}"
+            >
+                All ({{ student_count }})
+            </a>
+
+            <a
+                class="filter {% if status_filter == 'paid' %}active{% endif %}"
+                href="?status=paid&q={{ search_query|urlencode }}"
+            >
+                Fully Paid ({{ fully_paid_count }})
+            </a>
+
+            <a
+                class="filter {% if status_filter == 'part-paid' %}active{% endif %}"
+                href="?status=part-paid&q={{ search_query|urlencode }}"
+            >
+                Part-paid ({{ part_paid_count }})
+            </a>
+
+            <a
+                class="filter {% if status_filter == 'unpaid' %}active{% endif %}"
+                href="?status=unpaid&q={{ search_query|urlencode }}"
+            >
+                Unpaid ({{ unpaid_count }})
+            </a>
+
+        </div>
+
+
+        {% if rows %}
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Admission No.</th>
+                            <th>Fee</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Last Payment</th>
+                            <th>Reference</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in rows %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ row.student.full_name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ row.student.admission_number }}
+                                </td>
+
+                                <td>
+                                    ₦{{ row.fee_amount }}
+                                </td>
+
+                                <td>
+                                    ₦{{ row.paid }}
+                                </td>
+
+                                <td>
+                                    ₦{{ row.balance }}
+                                </td>
+
+                                <td>
+                                    <span class="
+                                        status
+                                        status-{{ row.payment_status }}
+                                    ">
+                                        {{ row.payment_status_label }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if row.latest_payment %}
+                                        {{ row.latest_payment.paid_at|date:"d M Y, g:i A" }}
+                                    {% else %}
+                                        <span class="muted">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if row.latest_payment %}
+                                        {{ row.latest_payment.reference }}
+                                    {% else %}
+                                        <span class="muted">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <a
+                                        href="{% url 'school_admin_student_payment_detail' school_class.id row.student.uuid %}"
+                                        style="
+                                            display:inline-block;
+                                            text-decoration:none;
+                                            background:var(--school-primary);
+                                            color:#fff;
+                                            padding:8px 12px;
+                                            border-radius:8px;
+                                            font-weight:700;
+                                            white-space:nowrap;
+                                        "
+                                    >
+                                        View Details
+                                    </a>
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty">
+                No students match this search/filter.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

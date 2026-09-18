@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Student | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/students/" class="admin-link">
+            Back to Students
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            STUDENT REGISTRATION
+        </span>
+
+        <h1>Add Student</h1>
+
+        <p>
+            Register a new or existing student and connect the parent account.
+        </p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="login-field">
+                <label for="student_type">Student Type</label>
+                <select id="student_type" name="student_type" required>
+                    <option value="">Select student type</option>
+                    <option value="NEW">New Student</option>
+                    <option value="EXISTING">Existing Student</option>
+                </select>
+            </div>
+
+            <div class="login-field">
+                <label for="surname">Surname</label>
+                <input type="text" id="surname" name="surname" required value="{{ form_data.surname|default:'' }}">
+            </div>
+
+            <div class="login-field">
+                <label for="first_name">First Name</label>
+                <input type="text" id="first_name" name="first_name" required value="{{ form_data.first_name|default:'' }}">
+            </div>
+
+            <div class="login-field">
+                <label for="middle_name">Middle Name</label>
+                <input type="text" id="middle_name" name="middle_name" value="{{ form_data.middle_name|default:'' }}">
+            </div>
+
+            <div class="login-field">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender" required>
+                    <option value="">Select gender</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                </select>
+            </div>
+
+            <div class="login-field">
+                <label for="date_of_birth">Date of Birth</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" value="{{ form_data.date_of_birth|default:'' }}">
+            </div>
+
+            <div class="login-field">
+                <label for="current_class">Current Class</label>
+                <select id="current_class" name="current_class" required>
+                    <option value="">Select class</option>
+
+                    {% for section in sections %}
+                        <optgroup label="{{ section.name }}">
+                            {% for class in section.classes.all %}
+                                {% if class.is_active %}
+                                    <option
+                                value="{{ class.id }}"
+                                data-section="{{ section.name }}"
+                                data-class-name="{{ class.name }}"
+                            >
+                                        {{ class.display_name }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="login-field" id="department_group" style="display:none;">
+                <label for="department">Department</label>
+
+                <select id="department" name="department">
+                    <option value="">Select department</option>
+                    <option value="SCIENCE">Science</option>
+                    <option value="COMMERCIAL">Commercial</option>
+                    <option value="ARTS">Arts</option>
+                </select>
+            </div>
+
+            <div class="login-field">
+                <label for="admission_year">Admission Year</label>
+                <input type="number" id="admission_year" name="admission_year" required value="{{ form_data.admission_year|default:'' }}">
+            </div>
+
+            <div class="login-field" id="entry_class_group">
+                <label for="entry_class_name">Class First Joined</label>
+                <input type="text" id="entry_class_name" name="entry_class_name" value="{{ form_data.entry_class_name|default:'' }}">
+            </div>
+
+            <div class="login-field" id="previous_school_group">
+                <label for="previous_school">Previous School</label>
+                <input type="text" id="previous_school" name="previous_school" value="{{ form_data.previous_school|default:'' }}">
+            </div>
+
+            <hr style="margin: 30px 0;">
+
+            <h3 style="margin-bottom: 20px;">Parent / Guardian</h3>
+
+            <div class="login-field">
+                <label for="parent_name">Parent / Guardian Name</label>
+                <input
+                    type="text"
+                    id="parent_name"
+                    name="parent_name"
+                    required
+                 value="{{ form_data.parent_name|default:'' }}">
+            </div>
+
+            <div class="login-field">
+                <label for="parent_phone">Parent Phone</label>
+                <input type="tel" id="parent_phone" name="parent_phone" required value="{{ form_data.parent_phone|default:'' }}">
+            </div>
+
+            <div class="login-field">
+                <label for="parent_email">Parent Email</label>
+                <input
+                    type="email"
+                    id="parent_email"
+                    name="parent_email"
+                    required
+                 value="{{ form_data.parent_email|default:'' }}">
+            </div>
+
+            <div class="login-field">
+                <label for="relationship">Relationship</label>
+                <select id="relationship" name="relationship" required>
+                    <option value="FATHER">Father</option>
+                    <option value="MOTHER">Mother</option>
+                    <option value="GUARDIAN">Guardian</option>
+                    <option value="GRANDPARENT">Grandparent</option>
+                    <option value="OTHER">Other</option>
+                </select>
+            </div>
+
+            <button type="submit" class="portal-button login-button">
+                Register Student
+            </button>
+        </form>
+
+    </section>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const studentType = document.getElementById("student_type");
+    const currentClass = document.getElementById("current_class");
+    const departmentGroup = document.getElementById("department_group");
+    const department = document.getElementById("department");
+    const surname = document.getElementById("surname");
+    const parentName = document.getElementById("parent_name");
+    const entryClassGroup = document.getElementById("entry_class_group");
+    const previousSchoolGroup = document.getElementById("previous_school_group");
+
+    function updateStudentFields() {
+        if (studentType.value === "NEW") {
+            entryClassGroup.style.display = "none";
+            previousSchoolGroup.style.display = "";
+        } else if (studentType.value === "EXISTING") {
+            entryClassGroup.style.display = "";
+            previousSchoolGroup.style.display = "none";
+        } else {
+            entryClassGroup.style.display = "";
+            previousSchoolGroup.style.display = "";
+        }
+    }
+
+    function updateDepartmentField() {
+        const selectedOption =
+            currentClass.options[currentClass.selectedIndex];
+
+        const className = selectedOption
+            ? (selectedOption.dataset.className || "").trim().toUpperCase()
+            : "";
+
+        const isSeniorSecondary =
+            className === "SS 1" ||
+            className === "SS 2" ||
+            className === "SS 3";
+
+        if (isSeniorSecondary) {
+            departmentGroup.style.display = "";
+            department.required = true;
+        } else {
+            departmentGroup.style.display = "none";
+            department.required = false;
+            department.value = "";
+        }
+    }
+
+    currentClass.addEventListener("change", updateDepartmentField);
+
+    studentType.addEventListener("change", updateStudentFields);
+
+    if (surname && parentName) {
+        surname.addEventListener("input", function () {
+            if (!parentName.dataset.edited) {
+                parentName.value = surname.value;
+            }
+        });
+
+        parentName.addEventListener("input", function () {
+            parentName.dataset.edited = "true";
+        });
+    }
+
+    updateStudentFields();
+    updateDepartmentField();
+});
+</script>
+
+
+{% if form_data %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const savedValues = {
+        student_type: "{{ form_data.student_type|default:''|escapejs }}",
+        gender: "{{ form_data.gender|default:''|escapejs }}",
+        current_class: "{{ form_data.current_class|default:''|escapejs }}",
+        relationship: "{{ form_data.relationship|default:''|escapejs }}"
+    };
+
+    Object.entries(savedValues).forEach(([name, value]) => {
+        if (!value) return;
+
+        const field = document.querySelector('[name="' + name + '"]');
+
+        if (field) {
+            field.value = value;
+            field.dispatchEvent(new Event("change"));
+        }
+    });
+});
+</script>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+    <style>
+        .page {
+            max-width: 950px;
+            margin: 40px auto;
+            padding: 0 22px 50px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #d8dfeb;
+            border-radius: 18px;
+            padding: 26px;
+            margin-bottom: 18px;
+        }
+
+        .message-card {
+            border: 1px solid #d8dfeb;
+            border-radius: 14px;
+            padding: 22px;
+            margin-top: 18px;
+        }
+
+        .message-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 20px;
+        }
+
+        .message-body {
+            margin: 0 0 18px 0;
+            line-height: 1.6;
+        }
+
+        .message-meta {
+            border-top: 1px solid #e4e9f1;
+            padding-top: 14px;
+            margin-top: 14px;
+        }
+
+        .message-meta p {
+            margin: 5px 0;
+        }
+
+        .muted {
+            color: #647087;
+        }
+
+        .back-btn {
+            background: var(--school-primary);
+            color: white;
+            border-radius: 10px;
+            padding: 11px 17px;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+{% if school %}
+<header class="portal-header">
+    <div class="school-name">{{ school.name }}</div>
+</header>
+{% endif %}
+
+<main class="page">
+
+    <div style="margin-bottom:18px;">
+        <a href="{% url 'parent_dashboard' %}" class="back-btn">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <section class="card">
+        <h1>Messages</h1>
+        <p class="muted">
+            School announcements and messages sent to you.
+        </p>
+    </section>
+
+    <section class="card">
+
+        {% if message_rows %}
+
+            {% for row in message_rows %}
+{% with item=row.message %}
+
+                <div class="message-card">
+
+                    <h3>{{ item.subject }}</h3>
+
+                    <div class="message-body">
+                        {{ item.body|linebreaksbr }}
+                    </div>
+
+                    <div class="message-meta">
+
+                    {% if item.target_type == "CLASS" and row.related_children %}
+                        <p class="muted">
+                            <strong>For:</strong>
+                            {% for child in row.related_children %}
+                                {{ child.full_name }} — {{ child.current_class.display_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% elif item.target_type == "PARENT" %}
+                        <p class="muted">
+                            <strong>For:</strong> You
+                        </p>
+                    {% endif %}
+
+                    <p class="muted">
+                        From: {{ item.school.name }}
+                    </p>
+
+                    <p class="muted">
+                        {{ item.created_at|date:"d M Y" }} • {{ item.created_at|time:"g:i A" }}
+                    </p>
+                    </div>
+
+                </div>
+
+            {% endwith %}
+{% endfor %}
+
+        {% else %}
+
+            <p class="muted">
+                You have no messages yet.
+            </p>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+</body>
+</html>

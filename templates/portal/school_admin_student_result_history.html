@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result History</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">{{ school.name }}</div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="{% url 'school_admin_dashboard' %}" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="{% url 'school_admin_logout' %}" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main>
+    <section class="portal-section">
+
+        <span class="hero-badge">RESULT HISTORY</span>
+
+        <h1>{{ student.full_name }}</h1>
+        <p>
+            <strong>Admission Number:</strong>
+            {{ student.admission_number }}
+        </p>
+
+        {% for publication in publications %}
+
+            <div class="child-card" style="margin-top:15px; text-align:left;">
+
+                <h3>{{ publication.session.name }}</h3>
+
+                <p>
+                    {{ publication.term.get_name_display }}
+                </p>
+
+                <a
+                    href="/school-admin/results/student/{{ student.uuid }}/report/{{ publication.session.id }}/{{ publication.term.id }}/"
+                    class="portal-button secondary"
+                >
+                    View Report
+                </a>
+
+            </div>
+
+        {% empty %}
+
+            <div class="child-card" style="margin-top:15px;">
+                <h3>No Published Results Found</h3>
+            </div>
+
+        {% endfor %}
+
+    </section>
+</main>
+
+</body>
+</html>

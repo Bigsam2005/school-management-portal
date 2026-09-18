@@ -1,0 +1,172 @@
+{% load static %}
+{% load money %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay School Fees | {{ student.full_name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ student.school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/parent/student/{{ student.uuid }}/fees/" class="admin-link">
+            Back to Fees
+        </a>
+
+        <a href="/parent/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            PAY SCHOOL FEES
+        </span>
+
+        <h1>{{ student.full_name }}</h1>
+
+        <p>
+            {{ fee_structure.session.name }}
+            -
+            {{ fee_structure.term.get_name_display }}
+        </p>
+
+        <div class="child-card">
+
+            <p>
+                <strong>Total Fee:</strong>
+                {{ fee_structure.amount|naira }}
+            </p>
+
+            <p>
+                <strong>Amount Paid:</strong>
+                {{ total_paid|naira }}
+            </p>
+
+            <p>
+                <strong>Outstanding Balance:</strong>
+                {{ balance|naira }}
+            </p>
+
+        </div>
+
+        <div style="margin-top:25px;">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="
+                        padding:12px 16px;
+                        margin-bottom:18px;
+                        border:1px solid #dc3545;
+                        border-radius:8px;
+                        background:#fff5f5;
+                        color:#b42318;
+                        font-weight:600;
+                    ">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="child-card" style="margin-bottom:20px; text-align:left;">
+                    <p>
+                        <strong>Minimum Payment This Time:</strong>
+                        {{ minimum_payment|naira }}
+                    </p>
+
+                    <p>
+                        <strong>Installments Remaining:</strong>
+                        {{ remaining_payment_slots }}
+                    </p>
+
+                    <p>
+                        You may pay more than the minimum,
+                        but you cannot pay above the outstanding balance.
+                    </p>
+
+                    {% if remaining_payment_slots == 1 %}
+                        <p>
+                            This is the final allowed installment.
+                            You must pay the full remaining balance.
+                        </p>
+                    {% endif %}
+                </div>
+
+                <div class="login-field">
+                    <label for="amount">
+                        Amount You Want to Pay
+                    </label>
+
+                    <input
+                        type="text"
+                        id="amount_display"
+                        placeholder="Enter amount"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <input
+                        type="hidden"
+                        id="amount"
+                        name="amount"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="portal-button login-button"
+                >
+                    Continue to Payment
+                </button>
+            </form>
+
+        </div>
+
+    </section>
+</main>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const displayInput = document.getElementById("amount_display");
+    const realInput = document.getElementById("amount");
+
+    if (!displayInput || !realInput) return;
+
+    displayInput.addEventListener("input", function () {
+        let raw = this.value.replace(/[^0-9]/g, "");
+
+        if (!raw) {
+            this.value = "";
+            realInput.value = "";
+            return;
+        }
+
+        realInput.value = raw;
+        this.value = Number(raw).toLocaleString("en-NG");
+    });
+});
+</script>
+
+</body>
+</html>

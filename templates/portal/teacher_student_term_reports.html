@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Term Reports</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">{{ school.name }}</div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="{% url 'teacher_dashboard' %}" class="admin-link">Dashboard</a>
+        <a href="{% url 'teacher_logout' %}" class="admin-link">Logout</a>
+    </div>
+</header>
+
+<main>
+    <section class="portal-section">
+
+        <span class="hero-badge">TERM REPORTS</span>
+
+        <h1>{{ student.full_name }}</h1>
+
+        <p>
+            <strong>Admission Number:</strong>
+            {{ student.admission_number }}
+        </p>
+
+        <p>
+            <strong>Class:</strong>
+            {{ student.current_class.display_name }}
+        </p>
+
+        <p>
+            <strong>Session:</strong>
+            {{ session.name }}
+        </p>
+
+        {% for summary in reports %}
+            <div class="child-card" style="margin-top:15px; text-align:left;">
+                <h3>{{ summary.term.get_name_display }}</h3>
+
+                <a
+                    href="{% url 'teacher_student_term_report' student.uuid summary.term.id %}"
+                    class="portal-button secondary"
+                >
+                    View Report
+                </a>
+            </div>
+        {% empty %}
+            <div class="child-card" style="margin-top:15px;">
+                <h3>No Published Term Reports Yet</h3>
+            </div>
+        {% endfor %}
+
+    </section>
+</main>
+
+</body>
+</html>

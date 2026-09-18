@@ -1,0 +1,393 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parents | {{ school.name }}</title>
+
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+    <style>
+        .parents-page {
+            max-width: 1120px;
+            margin: 40px auto;
+            padding: 0 22px 50px;
+        }
+
+        .parents-card {
+            background: #ffffff;
+            border: 1px solid #d8dfeb;
+            border-radius: 18px;
+            padding: 28px;
+            margin-bottom: 22px;
+        }
+
+        .parents-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(180px, 1fr));
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .stat-box {
+            background: #f4f7fb;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .stat-box strong {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 13px 15px;
+            border: 1px solid #ccd6e5;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .search-form button {
+            padding: 12px 22px;
+            border-radius: 10px;
+            border: 0;
+            background: var(--school-primary);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .parent-row {
+            border: 1px solid #d8dfeb;
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .parent-row-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .parent-name {
+            font-size: 20px;
+            font-weight: 800;
+            margin: 0 0 6px;
+        }
+
+        .muted {
+            color: #647087;
+        }
+
+        .children {
+            margin-top: 16px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .child {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .open-button {
+            display: inline-block;
+            text-decoration: none;
+            background: var(--school-primary);
+            color: #ffffff;
+            padding: 10px 17px;
+            border-radius: 9px;
+            font-weight: 700;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .detail-box {
+            background: #f4f7fb;
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px 15px;
+            color: #647087;
+        }
+
+        @media (max-width: 650px) {
+            .stats,
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div>
+        <a href="{% url 'school_admin_dashboard' %}" class="header-link">
+            Dashboard
+        </a>
+
+        <a href="{% url 'school_admin_logout' %}" class="header-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="parents-page">
+
+    
+<div style="margin-bottom:18px;">
+    <a href="{% url 'school_admin_dashboard' %}" class="open-button">
+        ← Back to Dashboard
+    </a>
+</div>
+
+<section class="parents-card">
+
+        <div class="parents-heading">
+            <div>
+                <p class="muted">PARENT MANAGEMENT</p>
+                <h1>Parents</h1>
+                <p class="muted">
+                    View parents and guardians connected to students in {{ school.name }}.
+                </p>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <strong>{{ parent_count }}</strong>
+                Parents / Guardians
+            </div>
+
+            <div class="stat-box">
+                <strong>{{ student_link_count }}</strong>
+                Student Connections
+            </div>
+        </div>
+
+        <form method="get" class="search-form">
+            <input
+                type="text"
+                name="q"
+                value="{{ query }}"
+                placeholder="Search parent, phone, student or admission number"
+            >
+            <button type="submit">Search</button>
+        </form>
+
+    </section>
+
+
+    {% if selected_row %}
+
+    <section class="parents-card">
+
+        <a href="{% url 'school_admin_parents' %}" class="open-button">
+            ← Back to Parents
+        </a>
+
+        <h2 style="margin-top:18px;">
+            {{ selected_row.parent.user.get_full_name|default:selected_row.parent.user.phone }}
+        </h2>
+
+        <div class="detail-grid">
+
+            <div class="detail-box">
+                <strong>Phone</strong><br>
+                {{ selected_row.parent.user.phone|default:"Not provided" }}
+            </div>
+
+            <div class="detail-box">
+                <strong>Email</strong><br>
+                {{ selected_row.parent.user.email|default:"Not provided" }}
+            </div>
+
+            <div class="detail-box">
+                <strong>Account</strong><br>
+                {% if selected_row.parent.account_activated %}
+                    Activated
+                {% else %}
+                    Not activated
+                {% endif %}
+            </div>
+
+            <div class="detail-box">
+                <strong>Phone verified</strong><br>
+                {% if selected_row.parent.phone_verified %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}
+            </div>
+
+        </div>
+
+        <h3 style="margin-top:25px;">Connected Students</h3>
+
+        <div class="children">
+
+            {% for link in selected_row.children %}
+
+            <div class="child">
+
+                <strong>{{ link.student.full_name }}</strong><br>
+
+                <span class="muted">
+                    Admission No:
+                    {{ link.student.admission_number }}
+                </span><br>
+
+                <span class="muted">
+                    Class:
+                    {% if link.student.current_class %}
+                        {{ link.student.current_class.display_name }}
+                    {% else %}
+                        No current class
+                    {% endif %}
+                </span><br>
+
+                <span class="muted">
+                    Relationship:
+                    {{ link.get_relationship_display }}
+                    {% if link.is_primary_contact %}
+                        · Primary Contact
+                    {% endif %}
+                </span>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% else %}
+
+    <section class="parents-card">
+
+        <h2>Parent Accounts</h2>
+
+        {% if parent_rows %}
+
+            {% for row in parent_rows %}
+
+            <div class="parent-row">
+
+                <div class="parent-row-top">
+
+                    <div>
+                        <p class="parent-name">
+                            {{ row.parent.user.get_full_name|default:row.parent.user.phone }}
+                        </p>
+
+                        <span class="muted">
+                            {{ row.parent.user.phone|default:"No phone number" }}
+                            · {{ row.children|length }}
+                            student{{ row.children|length|pluralize }}
+                        </span>
+                    </div>
+
+                    <a
+                        href="?parent={{ row.parent.id }}"
+                        class="open-button"
+                    >
+                        View Parent
+                    </a>
+
+                </div>
+
+                <div class="children">
+
+                    {% for link in row.children %}
+
+                    <div class="child">
+
+                        <strong>{{ link.student.full_name }}</strong>
+
+                        <span class="muted">
+                            · {{ link.get_relationship_display }}
+                            ·
+                            {% if link.student.current_class %}
+                                {{ link.student.current_class.display_name }}
+                            {% else %}
+                                No class
+                            {% endif %}
+                        </span>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty">
+                {% if query %}
+                    No parent or student matched “{{ query }}”.
+                {% else %}
+                    No parent accounts are connected to students yet.
+                {% endif %}
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    {% endif %}
+
+</main>
+
+</body>
+</html>

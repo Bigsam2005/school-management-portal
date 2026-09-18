@@ -1,0 +1,215 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Subject | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/subjects/" class="admin-link">
+            Subjects
+        </a>
+
+        <a href="/school-admin/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            EDIT SUBJECT
+        </span>
+
+        <h1>Edit Subject</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="
+                    padding:12px 16px;
+                    margin:18px 0;
+                    border:1px solid #dc3545;
+                    border-radius:8px;
+                    background:#fff5f5;
+                    color:#b42318;
+                    font-weight:600;
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="login-field">
+                <label for="name">Subject Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="{{ subject.name }}"
+                    required
+                >
+            </div>
+
+            <div class="login-field">
+                <label for="code">Subject Code</label>
+                <input
+                    type="text"
+                    id="code"
+                    name="code"
+                    value="{{ subject.code }}"
+                >
+            </div>
+
+            <div style="margin-top:25px; text-align:left;">
+                <h3>Classes Offering This Subject</h3>
+
+                {% for class in classes %}
+                    <label style="
+                        display:block;
+                        padding:10px 0;
+                        border-bottom:1px solid #edf1f7;
+                    ">
+                        <input
+                            type="checkbox"
+                            name="classes"
+                            value="{{ class.id }}"
+                            data-section="{{ class.section.name }}"
+                            class="class-checkbox"
+                            {% if class in subject.classes.all %}checked{% endif %}
+                        >
+                        {{ class.section.name }} — {{ class.display_name }}
+                    </label>
+                {% empty %}
+                    <p>No active classes found.</p>
+                {% endfor %}
+            </div>
+
+            <div
+                id="senior_department_group"
+                style="
+                    display:none;
+                    margin-top:25px;
+                    text-align:left;
+                    padding:18px;
+                    border:1px solid #edf1f7;
+                    border-radius:10px;
+                "
+            >
+                <h3>Senior Secondary Department</h3>
+
+                <p>
+                    Select the department(s) that offer this subject.
+                </p>
+
+                <label style="display:block; padding:8px 0;">
+                    <input
+                        type="checkbox"
+                        name="senior_science"
+                        {% if subject.senior_science %}checked{% endif %}
+                    >
+                    Science
+                </label>
+
+                <label style="display:block; padding:8px 0;">
+                    <input
+                        type="checkbox"
+                        name="senior_commercial"
+                        {% if subject.senior_commercial %}checked{% endif %}
+                    >
+                    Commercial
+                </label>
+
+                <label style="display:block; padding:8px 0;">
+                    <input
+                        type="checkbox"
+                        name="senior_arts"
+                        {% if subject.senior_arts %}checked{% endif %}
+                    >
+                    Arts
+                </label>
+            </div>
+
+            <div style="margin-top:25px; text-align:left;">
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_active"
+                        {% if subject.is_active %}checked{% endif %}
+                    >
+                    Subject is active
+                </label>
+            </div>
+
+            <button
+                type="submit"
+                class="portal-button login-button"
+                style="margin-top:25px;"
+            >
+                Save Changes
+            </button>
+        </form>
+
+    </section>
+</main>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const classCheckboxes = document.querySelectorAll(".class-checkbox");
+    const departmentGroup =
+        document.getElementById("senior_department_group");
+
+    function updateDepartmentVisibility() {
+        let seniorSelected = false;
+
+        classCheckboxes.forEach(function (checkbox) {
+            if (
+                checkbox.checked &&
+                checkbox.dataset.section === "Senior Secondary"
+            ) {
+                seniorSelected = true;
+            }
+        });
+
+        departmentGroup.style.display =
+            seniorSelected ? "" : "none";
+    }
+
+    classCheckboxes.forEach(function (checkbox) {
+        checkbox.addEventListener(
+            "change",
+            updateDepartmentVisibility
+        );
+    });
+
+    updateDepartmentVisibility();
+});
+</script>
+
+</body>
+</html>

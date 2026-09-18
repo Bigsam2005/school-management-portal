@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/" class="admin-link">
+            Home
+        </a>
+
+        <a href="/teacher/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            TEACHER DASHBOARD
+        </span>
+
+        <h1>Welcome, {{ membership.user.last_name }}</h1>
+
+        <p>
+            Manage your assigned classes, students and academic records.
+        </p>
+
+        <div class="portal-options">
+
+            <a href="/teacher/students/" class="portal-button">
+                My Students
+            </a>
+
+            <a href="/teacher/students/add/" class="portal-button secondary">
+                Add Student
+            </a>
+
+            <a href="/teacher/results/" class="portal-button secondary">
+                Enter Results
+            </a>
+
+        </div>
+
+    <div class="children-list">
+
+        {% if assigned_classes %}
+
+            {% for class in assigned_classes %}
+
+                <div class="child-card" style="margin-bottom:15px;">
+
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Assigned Class</strong>
+                    </p>
+
+                    <h2 style="margin:0 0 12px 0;">
+                        {{ class.display_name }}
+                    </h2>
+
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+
+                        <a href="/teacher/students/"
+                           class="portal-button">
+                            View Students
+                        </a>
+
+                        <a href="/teacher/results/class/{{ class.id }}/"
+                           class="portal-button secondary">
+                            Enter Results
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="child-card">
+                <h3>No Class Assigned</h3>
+                <p>
+                    No class has been assigned to you yet.
+                    Please contact the school administrator.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+    </section>
+</main>
+
+</body>
+</html>

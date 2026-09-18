@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    {{ student.full_name }} Payment Details | {{ school.name }}
+</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #0f172a;
+}
+
+.topbar {
+    background: var(--school-primary);
+    color: white;
+    padding: 20px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.topbar h2 {
+    margin: 0;
+}
+
+.top-links {
+    display: flex;
+    gap: 10px;
+}
+
+.topbar a {
+    color: white;
+    text-decoration: none;
+    border: 1px solid #dbeafe;
+    padding: 10px 16px;
+    border-radius: 8px;
+}
+
+.page {
+    width: min(1150px, 94%);
+    margin: 35px auto;
+}
+
+.card {
+    background: white;
+    border-radius: 18px;
+    padding: 27px;
+    margin-bottom: 22px;
+    box-shadow: 0 8px 25px rgba(15,23,42,.06);
+}
+
+.badge {
+    display: inline-block;
+    background: #eaf1ff;
+    color: #163f77;
+    padding: 8px 15px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.student-info {
+    margin-top: 20px;
+    padding: 18px;
+    background: #f8fafc;
+    border: 1px solid #dbe3ef;
+    border-radius: 11px;
+    line-height: 1.8;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 14px;
+}
+
+.summary {
+    border: 1px solid #dbe3ef;
+    background: #f8fafc;
+    padding: 18px;
+    border-radius: 12px;
+}
+
+.summary small {
+    color: #64748b;
+}
+
+.summary strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 21px;
+}
+
+.paid {
+    color: #15803d;
+}
+
+.part-paid {
+    color: #b45309;
+}
+
+.unpaid {
+    color: #b91c1c;
+}
+
+.status {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.status.paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status.part-paid {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status.unpaid {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+th {
+    background: var(--school-primary);
+    color: white;
+    text-align: left;
+    padding: 13px;
+}
+
+td {
+    padding: 13px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.empty {
+    padding: 35px;
+    text-align: center;
+    color: #64748b;
+}
+
+@media(max-width: 800px) {
+
+    .summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+}
+
+@media(max-width: 520px) {
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <h2>{{ school.name }}</h2>
+
+    <div class="top-links">
+
+        <a href="{% url 'school_admin_class_payments' school_class.id %}">
+            Back to {{ school_class.display_name }}
+        </a>
+
+        <a href="{% url 'school_admin_dashboard' %}">
+            Dashboard
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="page">
+
+<div class="card">
+
+    <span class="badge">
+        STUDENT PAYMENT DETAILS
+    </span>
+
+    <h1>{{ student.full_name }}</h1>
+
+    <div class="student-info">
+
+        <strong>Admission Number:</strong>
+        {{ student.admission_number }}
+
+        <br>
+
+        <strong>Class:</strong>
+        {{ school_class.display_name }}
+
+        <br>
+
+        <strong>Academic Period:</strong>
+        {{ session.name }} — {{ term.get_name_display }}
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="summary-grid">
+
+        <div class="summary">
+            <small>School Fee</small>
+            <strong>₦{{ fee_amount }}</strong>
+        </div>
+
+        <div class="summary">
+            <small>Total Paid</small>
+            <strong class="paid">
+                ₦{{ total_paid }}
+            </strong>
+        </div>
+
+        <div class="summary">
+            <small>Outstanding Balance</small>
+            <strong class="unpaid">
+                ₦{{ balance }}
+            </strong>
+        </div>
+
+        <div class="summary">
+            <small>Payment Status</small>
+
+            <strong>
+                <span class="status {{ status_class }}">
+                    {{ payment_status }}
+                </span>
+            </strong>
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <h2>
+        Payment History
+    </h2>
+
+    {% if payment_rows %}
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Installment</th>
+                    <th>Amount Paid</th>
+                    <th>Date</th>
+                    <th>Reference</th>
+                    <th>Total Paid After</th>
+                    <th>Balance After</th>
+                    <th>Receipt</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for row in payment_rows %}
+
+                <tr>
+
+                    <td>
+                        Payment {{ row.number }}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ₦{{ row.amount }}
+                        </strong>
+                    </td>
+
+                    <td>
+                        {{ row.payment.paid_at|date:"d M Y, g:i A" }}
+                    </td>
+
+                    <td>
+                        {{ row.payment.reference }}
+                    </td>
+
+                    <td>
+                        ₦{{ row.running_total }}
+                    </td>
+
+                    <td>
+                        ₦{{ row.remaining_after }}
+                    </td>
+
+                    <td>
+                        <a
+                            href="{% url 'school_admin_payment_receipt' school_class.id student.uuid row.payment.id %}"
+                            style="
+                                display:inline-block;
+                                text-decoration:none;
+                                background:var(--school-primary);
+                                color:white;
+                                padding:8px 12px;
+                                border-radius:8px;
+                                font-weight:700;
+                                white-space:nowrap;
+                            "
+                        >
+                            View Receipt
+                        </a>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+        <div class="empty">
+            This student has not made any confirmed payment for this term.
+        </div>
+
+    {% endif %}
+
+</div>
+
+</div>
+
+</body>
+</html>

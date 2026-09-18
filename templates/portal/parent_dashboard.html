@@ -1,0 +1,153 @@
+{% load money %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard{% if school %} | {{ school.name }}{% endif %}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {% if school %}{{ school.name }}{% else %}SCHOOL PORTAL{% endif %}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/" class="admin-link">Home</a>
+        <a href="/parent/logout/" class="admin-link">Logout</a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">PARENT DASHBOARD</span>
+
+        <h1>
+            Welcome, Our Dear Parent
+        </h1>
+
+        <h2>
+            Mr./Mrs.
+            {% if children %}
+                {{ children.0.surname|title }}
+            {% elif request.user.last_name %}
+                {{ request.user.last_name|title }}
+            {% else %}
+                Parent/Guardian
+            {% endif %}
+        </h2>
+
+        <p>
+            Manage your children's school fees, receipts,
+            messages and results.
+        </p>
+
+        
+<div style="margin: 0 0 22px 0;" id="PARENT-LEVEL-MESSAGES">
+    <a href="{% url 'parent_messages' %}" class="portal-button" style="width:auto; display:inline-block; padding:12px 28px;">
+        Messages
+    </a>
+</div>
+
+{% if children %}
+
+            <div class="children-list">
+
+                {% for child in children %}
+
+                    <div class="child-card">
+
+                        <h3>{{ child.full_name }}</h3>
+
+                        <p>
+                            Admission No:
+                            <strong>{{ child.admission_number }}</strong>
+                        </p>
+
+                        <p>
+                            Class:
+                            <strong>{{ child.current_class.display_name }}</strong>
+                        </p>
+
+                        <p>
+                            Status:
+                            <strong>{{ child.get_status_display }}</strong>
+                        </p>
+
+                        {% for fee in child_fee_data %}
+                            {% if fee.student.id == child.id %}
+
+                                <div style="margin-top:16px; text-align:left;">
+
+                                    <p>
+                                        <strong>Total Fee:</strong>
+                                        {{ fee.total_fee|naira }}
+                                    </p>
+
+                                    <p>
+                                        <strong>Amount Paid:</strong>
+                                        {{ fee.total_paid|naira }}
+                                    </p>
+
+                                    <p>
+                                        <strong>Balance:</strong>
+                                        {{ fee.balance|naira }}
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+                        {% endfor %}
+
+                        <div class="child-actions">
+
+                            <a href="/parent/student/{{ child.uuid }}/fees/" class="portal-button">
+                                School Fees
+                            </a>
+
+                            <a href="#" class="portal-button secondary">
+                                Receipts
+                            </a>
+
+                            <a href="/parent/student/{{ child.uuid }}/results/" class="portal-button secondary">
+                                Results
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <h3>No student connected yet</h3>
+
+                <p>
+                    Once the school connects your child to this
+                    parent account, the student's information will
+                    appear here automatically.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

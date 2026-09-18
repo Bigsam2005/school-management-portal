@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correct Result | {{ student.full_name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="{% url 'school_admin_class_result_details' school_class.id %}" class="admin-link">
+            Class Results
+        </a>
+        <a href="{% url 'school_admin_result_audit' %}" class="admin-link">
+            Audit History
+        </a>
+        <a href="{% url 'school_admin_dashboard' %}" class="admin-link">
+            Dashboard
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content" style="max-width:1000px;">
+
+        <span class="hero-badge">PUBLISHED RESULT CORRECTION</span>
+
+        <h1>{{ student.full_name }}</h1>
+
+        <p>
+            {{ school_class.display_name }} — {{ session.name }} — {{ term.get_name_display }}
+        </p>
+
+        <div class="child-card" style="margin-top:25px; text-align:left;">
+            <p>
+                <strong>Admission Number:</strong>
+                {{ student.admission_number }}
+            </p>
+
+            <p>
+                This result has already been published. Any score changed here will be recorded permanently in the result audit history.
+            </p>
+        </div>
+
+        <form method="post" style="margin-top:25px;">
+            {% csrf_token %}
+
+            {% if result_rows %}
+
+                {% for row in result_rows %}
+                <div class="child-card" style="margin-bottom:15px; text-align:left;">
+
+                    <h3>{{ row.subject.name }}</h3>
+
+                    <div style="
+                        display:grid;
+                        grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+                        gap:15px;
+                    ">
+
+                        <div class="login-field">
+                            <label for="ca_{{ row.subject.id }}">
+                                CA Score
+                            </label>
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                id="ca_{{ row.subject.id }}"
+                                name="ca_{{ row.subject.id }}"
+                                value="{{ row.result.ca_score }}"
+                                required
+                            >
+                        </div>
+
+                        <div class="login-field">
+                            <label for="exam_{{ row.subject.id }}">
+                                Exam Score
+                            </label>
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                id="exam_{{ row.subject.id }}"
+                                name="exam_{{ row.subject.id }}"
+                                value="{{ row.result.exam_score }}"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+                    <p style="margin-top:10px;">
+                        <strong>Total:</strong>
+                        {{ row.result.total_score }}
+                    </p>
+
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="portal-button">
+                    Save Published Result Correction
+                </button>
+
+            {% else %}
+
+                <div class="child-card">
+                    <h3>No Result Records Found</h3>
+                    <p>
+                        There are no saved subject results for this student in the current term.
+                    </p>
+                </div>
+
+            {% endif %}
+
+        </form>
+
+    </section>
+</main>
+
+</body>
+</html>

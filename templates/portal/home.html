@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management Portal</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+</head>
+<body>
+    <header class="portal-header">
+        <div class="school-name">
+            SCHOOL MANAGEMENT PORTAL
+        </div>
+
+        <a href="/admin/" class="admin-link">
+            Admin Portal
+        </a>
+    </header>
+
+    <main class="hero">
+        <section class="hero-content">
+            <span class="hero-badge">
+                SCHOOL MANAGEMENT PORTAL
+            </span>
+
+            <h1>
+                Welcome to the School Management Portal
+            </h1>
+
+            <p>
+                Manage school fees, results, receipts and parent communication
+                from one secure portal.
+            </p>
+
+            <div class="portal-options">
+                <a href="/school-admin/login/" class="portal-button">
+                    School Admin
+                </a>
+
+                <a href="/teacher/login/" class="portal-button secondary">
+                    Teacher Login
+                </a>
+
+                <a href="/parent/login/" class="portal-button secondary">
+                    Parent Login
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

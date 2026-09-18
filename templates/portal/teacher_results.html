@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Results | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/teacher/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/teacher/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            RESULT ENTRY
+        </span>
+
+        <h1>My Class Results</h1>
+
+        {% if session and term %}
+            <p>
+                {{ session.name }} — {{ term.get_name_display }}
+            </p>
+        {% else %}
+            <div class="child-card">
+                <h3>No current session or term</h3>
+                <p>
+                    The school admin must set the current academic session and term.
+                </p>
+            </div>
+        {% endif %}
+
+        {% for status in class_statuses %}
+            <div class="child-card" style="margin-top:15px; text-align:left;">
+
+                <h3>
+                    {{ status.school_class.display_name }}
+                </h3>
+
+                <p>
+                    <strong>Total Students:</strong>
+                    {{ status.total_students }}
+                </p>
+
+                <p>
+                    <strong>Complete:</strong>
+                    {{ status.complete_count }}
+                </p>
+
+                <p>
+                    <strong>Incomplete:</strong>
+                    {{ status.incomplete_count }}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    {% if status.is_ready %}
+                        COMPLETE
+                    {% else %}
+                        IN PROGRESS
+                    {% endif %}
+                </p>
+
+                <div style="margin-top:12px;">
+                    <a
+                        href="/teacher/results/class/{{ status.school_class.id }}/"
+                        class="portal-button secondary"
+                    >
+                        Enter / Manage Results
+                    </a>
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            {% if session and term %}
+                <div class="child-card">
+                    <h3>No Assigned Classes</h3>
+                    <p>
+                        You do not currently have an active class assignment.
+                    </p>
+                </div>
+            {% endif %}
+
+        {% endfor %}
+
+    </section>
+</main>
+
+</body>
+</html>

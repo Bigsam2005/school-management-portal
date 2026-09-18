@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotion Management | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/academic-year/" class="admin-link">
+            Academic Year
+        </a>
+
+        <a href="/school-admin/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            PROMOTION MANAGEMENT
+        </span>
+
+        <h1>
+            Annual Promotion Review
+        </h1>
+
+        <p>
+            {{ session.name }}
+        </p>
+
+        {% if rows %}
+
+            {% for row in rows %}
+
+                <div class="child-card" style="margin-top:20px; text-align:left;">
+
+                    <h3>
+                        {{ row.summary.student.full_name }}
+                    </h3>
+
+                    <p>
+                        <strong>Admission Number:</strong>
+                        {{ row.summary.student.admission_number }}
+                    </p>
+
+                    <p>
+                        <strong>Current Class:</strong>
+                        {{ row.summary.school_class.display_name }}
+                    </p>
+
+                    <p>
+                        <strong>Annual Average:</strong>
+                        {{ row.summary.annual_average }}%
+                    </p>
+
+                    <p>
+                        <strong>Annual Position:</strong>
+
+                        {% if row.summary.annual_position %}
+                            {{ row.summary.annual_position }}
+                        {% else %}
+                            Not Available
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        <strong>Current Decision:</strong>
+                        {{ row.summary.get_promotion_status_display }}
+                    </p>
+
+                    <p>
+                        <strong>Next Class:</strong>
+
+                        {% if row.next_class %}
+                            {{ row.next_class.display_name }}
+                        {% else %}
+                            Final Class — Graduation Candidate
+                        {% endif %}
+                    </p>
+
+                    <div style="
+                        margin-top:18px;
+                        display:flex;
+                        gap:10px;
+                        flex-wrap:wrap;
+                    ">
+
+                        {% if row.next_class %}
+                            <form
+                                method="post"
+                                action="/school-admin/promotions/{{ row.summary.id }}/decision/"
+                                style="margin:0;"
+                            >
+                                {% csrf_token %}
+                                <input
+                                    type="hidden"
+                                    name="decision"
+                                    value="PROMOTED"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="portal-button"
+                                    onclick="return confirm('Promote this student to the next class?');"
+                                >
+                                    Promote
+                                </button>
+                            </form>
+
+                        {% else %}
+                            <form
+                                method="post"
+                                action="/school-admin/promotions/{{ row.summary.id }}/decision/"
+                                style="margin:0;"
+                            >
+                                {% csrf_token %}
+                                <input
+                                    type="hidden"
+                                    name="decision"
+                                    value="GRADUATED"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="portal-button"
+                                    onclick="return confirm('Mark this student as graduated?');"
+                                >
+                                    Graduate
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form
+                            method="post"
+                            action="/school-admin/promotions/{{ row.summary.id }}/decision/"
+                            style="margin:0;"
+                        >
+                            {% csrf_token %}
+                            <input
+                                type="hidden"
+                                name="decision"
+                                value="REPEAT"
+                            >
+
+                            <button
+                                type="submit"
+                                class="portal-button secondary"
+                                onclick="return confirm('Mark this student to repeat the current class?');"
+                            >
+                                Repeat
+                            </button>
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="child-card" style="margin-top:25px;">
+                <h3>No Annual Results Yet</h3>
+
+                <p>
+                    Annual promotion records will appear after students
+                    complete all three terms and the annual summaries are generated.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

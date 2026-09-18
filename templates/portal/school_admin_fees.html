@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>School Fees | {{ school.name }}</title>
+
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#1f4a83" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #0f172a;
+        }
+
+        .topbar {
+            background: var(--school-primary);
+            color: white;
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .topbar-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .topbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 18px;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+        }
+
+        .page {
+            width: min(1100px, 92%);
+            margin: 40px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #eaf1ff;
+            color: #163f77;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .period {
+            margin: 20px 0 28px;
+            padding: 18px;
+            background: #f8fafc;
+            border: 1px solid #dbe3ef;
+            border-radius: 12px;
+        }
+
+        .message {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: #eef4ff;
+            border: 1px solid #bfd3f2;
+        }
+
+        .fee-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 14px;
+            align-items: end;
+        }
+
+        .field label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .field select,
+        .field input {
+            width: 100%;
+            padding: 13px;
+            border-radius: 9px;
+            border: 1px solid #cbd5e1;
+            font-size: 16px;
+        }
+
+        .save-btn {
+            border: 0;
+            background: var(--school-primary);
+            color: white;
+            padding: 14px 22px;
+            border-radius: 9px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .hint {
+            margin-top: 15px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+        }
+
+        th {
+            background: var(--school-primary);
+            color: white;
+            text-align: left;
+            padding: 14px;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .amount {
+            font-weight: 700;
+        }
+
+        .active {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .locked {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .editable {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            color: #64748b;
+        }
+
+        @media (max-width: 760px) {
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .fee-form {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+    <h2>{{ school.name }}</h2>
+
+    <div class="topbar-links">
+        <a href="{% url 'school_admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'school_admin_logout' %}">Logout</a>
+    </div>
+</div>
+
+<div class="page">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card">
+
+        <span class="badge">SCHOOL FEE MANAGEMENT</span>
+
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:15px;
+            flex-wrap:wrap;
+        ">
+            <h1>Set School Fees</h1>
+
+            <a
+                href="{% url 'school_admin_fee_status' %}"
+                style="
+                    text-decoration:none;
+                    background:var(--school-primary);
+                    color:white;
+                    padding:12px 18px;
+                    border-radius:9px;
+                    font-weight:700;
+                "
+            >
+                Payment Status
+            </a>
+        </div>
+
+        {% if session and term %}
+            <div class="period">
+                <strong>Current Academic Period:</strong>
+                {{ session.name }} — {{ term.get_name_display }}
+            </div>
+
+            <form method="post" class="fee-form">
+                {% csrf_token %}
+
+                <div class="field">
+                    <label for="school_class">Class</label>
+
+                    <select
+                        id="school_class"
+                        name="school_class"
+                        required
+                    >
+                        <option value="">Select class</option>
+
+                        {% for class in classes %}
+                            <option
+                                value="{{ class.id }}"
+                                {% for row in fee_rows %}
+                                    {% if row.fee.school_class_id == class.id %}
+                                        data-amount="{{ row.formatted_amount }}"
+                                        data-existing="true"
+                                        data-locked="{% if row.locked %}true{% else %}false{% endif %}"
+                                    {% endif %}
+                                {% endfor %}
+                            >
+                                {{ class.display_name }}
+                                {% for row in fee_rows %}
+                                    {% if row.fee.school_class_id == class.id and row.locked %}
+                                        — Locked
+                                    {% endif %}
+                                {% endfor %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="amount">School Fee Amount</label>
+
+                    <div style="position:relative;">
+                        <span
+                            style="
+                                position:absolute;
+                                left:14px;
+                                top:50%;
+                                transform:translateY(-50%);
+                                font-weight:700;
+                            "
+                        >₦</span>
+
+                        <input
+                            id="amount"
+                            type="text"
+                            name="amount"
+                            inputmode="decimal"
+                            placeholder="50,000"
+                            autocomplete="off"
+                            required
+                            style="padding-left:34px;"
+                        >
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                    id="saveFeeButton"
+                >
+                    Save Fee
+                </button>
+            </form>
+
+            <div class="hint">
+                Selecting a class that already has a fee will update it.
+                Once a confirmed parent payment exists, the fee amount is locked to protect payment and receipt history.
+            </div>
+
+        {% else %}
+
+            <div class="period">
+                No current academic session or term is available.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Current Term Fees</h2>
+
+        {% if fee_rows %}
+            <div class="table-wrap">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Fee</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Editing</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for row in fee_rows %}
+                        <tr>
+
+                            <td>
+                                {{ row.fee.school_class.display_name }}
+                            </td>
+
+                            <td>
+                                {{ row.fee.title }}
+                            </td>
+
+                            <td class="amount">
+                                ₦{{ row.formatted_amount }}
+                            </td>
+
+                            <td>
+                                {% if row.fee.is_active %}
+                                    <span class="active">Active</span>
+                                {% else %}
+                                    Inactive
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if row.locked %}
+                                    <span class="locked">
+                                        Locked — payment exists
+                                    </span>
+                                {% else %}
+                                    <span class="editable">
+                                        Editable
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty">
+                No school fees have been set for the current term yet.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const classSelect = document.getElementById("school_class");
+    const amountInput = document.getElementById("amount");
+    const saveButton = document.getElementById("saveFeeButton");
+
+    function formatNaira(value) {
+        value = value.replace(/[^0-9.]/g, "");
+
+        const parts = value.split(".");
+        let whole = parts[0] || "";
+        let decimal = parts.length > 1
+            ? "." + parts[1].slice(0, 2)
+            : "";
+
+        whole = whole.replace(/^0+(?=\d)/, "");
+        whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        return whole + decimal;
+    }
+
+    amountInput.addEventListener("input", function () {
+        const cursorWasAtEnd =
+            amountInput.selectionStart === amountInput.value.length;
+
+        amountInput.value = formatNaira(amountInput.value);
+
+        if (cursorWasAtEnd) {
+            amountInput.setSelectionRange(
+                amountInput.value.length,
+                amountInput.value.length
+            );
+        }
+    });
+
+    classSelect.addEventListener("change", function () {
+        const option = classSelect.options[classSelect.selectedIndex];
+
+        if (!option || !option.value) {
+            amountInput.value = "";
+            amountInput.disabled = false;
+            saveButton.disabled = false;
+            saveButton.textContent = "Save Fee";
+            return;
+        }
+
+        const existing = option.dataset.existing === "true";
+        const locked = option.dataset.locked === "true";
+        const amount = option.dataset.amount || "";
+
+        if (existing) {
+            amountInput.value = amount;
+            saveButton.textContent = locked
+                ? "Fee Locked"
+                : "Update Fee";
+        } else {
+            amountInput.value = "";
+            saveButton.textContent = "Save Fee";
+        }
+
+        amountInput.disabled = locked;
+        saveButton.disabled = locked;
+
+        if (locked) {
+            saveButton.style.opacity = "0.55";
+            saveButton.style.cursor = "not-allowed";
+        } else {
+            saveButton.style.opacity = "1";
+            saveButton.style.cursor = "pointer";
+        }
+    });
+});
+</script>
+
+</body>
+</html>

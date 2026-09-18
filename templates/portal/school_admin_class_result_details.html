@@ -1,0 +1,310 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ school_class.display_name }} Results | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/results/" class="admin-link">
+            Results
+        </a>
+
+        <a href="/school-admin/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            CLASS RESULT DETAILS
+        </span>
+
+        <h1>{{ school_class.display_name }}</h1>
+
+        <p>
+            {{ session.name }} — {{ term.get_name_display }}
+        </p>
+
+        <div class="child-card" style="margin:20px 0; text-align:left;">
+
+            <p>
+                <strong>Total Students:</strong>
+                {{ class_status.total_students }}
+            </p>
+
+            <p>
+                <strong>Complete:</strong>
+                {{ class_status.complete_count }}
+            </p>
+
+            <p>
+                <strong>Incomplete:</strong>
+                {{ class_status.incomplete_count }}
+            </p>
+
+            <p>
+                <strong>Class Status:</strong>
+
+                {% if class_status.is_ready %}
+                    READY TO PUBLISH
+                {% else %}
+                    NOT READY
+                {% endif %}
+            </p>
+            <p>
+                <strong>Publication:</strong>
+
+                {% if publication and publication.is_published and status.student.uuid %}
+                    PUBLISHED
+                {% else %}
+                    DRAFT
+                {% endif %}
+            </p>
+</div>
+
+        {% for status in class_status.students %}
+
+            <div class="child-card" style="margin-top:15px; text-align:left;">
+
+                <h3>
+                    {{ status.student.full_name }}
+                </h3>
+
+                <p>
+                    <strong>Admission Number:</strong>
+                    {{ status.student.admission_number }}
+                </p>
+
+                {% if status.student.current_class.section.name == "Senior Secondary" %}
+                    <p>
+                        <strong>Department:</strong>
+
+                        {% if status.student.department %}
+                            {{ status.student.get_department_display }}
+                        {% else %}
+                            Not Assigned
+                        {% endif %}
+                    </p>
+                {% endif %}
+
+                <p>
+                    <strong>Subjects Completed:</strong>
+                    {{ status.completed_count }}
+                    /
+                    {{ status.required_count }}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+
+                    {% if status.is_complete %}
+                        COMPLETE
+                    {% else %}
+                        INCOMPLETE
+                    {% endif %}
+                </p>
+
+                {% if status.department_missing %}
+                    <p style="font-weight:700;">
+                        Department has not been assigned to this student.
+                    </p>
+                {% endif %}
+
+                {% if status.missing_subjects %}
+                    <div style="margin-top:10px;">
+                        <strong>Missing Subjects:</strong>
+
+                        <div style="margin-top:8px;">
+                            {% for subject in status.missing_subjects %}
+                                <span style="
+                                    display:inline-block;
+                                    margin:4px;
+                                    padding:6px 10px;
+                                    border-radius:999px;
+                                    background:#fff3cd;
+                                ">
+                                    {{ subject.name }}
+                                </span>
+                            {% empty %}
+                                <span>No missing subjects.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            
+        {% if publication and publication.is_published and status.student.uuid %}
+            <div style="margin-top:15px;">
+                <a
+                    href="{% url 'school_admin_correct_student_result' status.student.uuid %}"
+                    class="portal-button secondary"
+                >
+                    Correct Published Result
+                </a>
+
+                <a
+                    href="{% url 'school_admin_student_report' status.student.uuid %}"
+                    class="portal-button secondary"
+                    style="margin-left:8px;"
+                >
+                    View Report
+                </a>
+
+                <a
+                    href="{% url 'school_admin_student_result_history' status.student.uuid %}"
+                    class="portal-button secondary"
+                    style="margin-left:8px;"
+                >
+                    Result History
+                </a>
+            </div>
+        {% endif %}
+
+</div>
+
+        {% empty %}
+
+            
+<div class="child-card" style="margin-bottom:20px;">
+    <form method="get" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <input
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search name, admission number or parent phone"
+            style="flex:1; min-width:220px; padding:12px; border:1px solid #ccc; border-radius:8px;"
+        >
+
+        <button type="submit" class="portal-button secondary">
+            Search Student
+        </button>
+
+        {% if search_query %}
+        <a href="{% url 'school_admin_class_result_details' school_class.id %}"
+           class="portal-button secondary">
+            Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="child-card">
+                <h3>No Students Found</h3>
+            </div>
+
+        {% endfor %}
+
+        {% if publication and publication.is_published %}
+            <div style="margin-top:25px;">
+
+                <button
+                    type="button"
+                    class="portal-button"
+                    disabled
+                >
+                    Results Published
+                </button>
+
+                <form
+                    method="post"
+                    action="/school-admin/results/class/{{ school_class.id }}/resumption-date/"
+                    style="margin-top:20px;"
+                >
+                    {% csrf_token %}
+
+                    <div class="login-field">
+                        <label for="next_term_resumption_date">
+                            Next Term Resumption Date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="next_term_resumption_date"
+                            name="next_term_resumption_date"
+                            value="{% if publication.next_term_resumption_date %}{{ publication.next_term_resumption_date|date:'Y-m-d' }}{% endif %}"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="portal-button secondary"
+                        style="margin-top:12px;"
+                    >
+                        Update Resumption Date
+                    </button>
+                </form>
+
+            </div>
+
+        {% elif class_status.is_ready %}
+            <div style="margin-top:25px;">
+                <form
+                    method="post"
+                    action="/school-admin/results/class/{{ school_class.id }}/publish/"
+                >
+                    {% csrf_token %}
+
+                    <div class="login-field" style="margin-bottom:15px;">
+                        <label for="next_term_resumption_date">
+                            Next Term Resumption Date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="next_term_resumption_date"
+                            name="next_term_resumption_date"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="portal-button"
+                    >
+                        Publish Results
+                    </button>
+                </form>
+            </div>
+
+        {% else %}
+            <div style="margin-top:25px;">
+                <button
+                    type="button"
+                    class="portal-button secondary"
+                    disabled
+                >
+                    Results Not Ready
+                </button>
+            </div>
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

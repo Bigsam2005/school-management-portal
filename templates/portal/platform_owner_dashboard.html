@@ -1,0 +1,456 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Dashboard | School Portal</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+    <style>
+        body {
+            margin: 0;
+            background: #f4f7fb;
+            color: #102345;
+            font-family: Arial, sans-serif;
+        }
+
+        .ceo-header {
+            background: #153f7a;
+            color: white;
+            padding: 22px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ceo-header h2 {
+            margin: 0;
+        }
+
+        .ceo-wrap {
+            width: 88%;
+            max-width: 1250px;
+            margin: 35px auto;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e6eefb;
+            color: #153f7a;
+            padding: 9px 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin: 28px 0;
+        }
+
+        .stat-card,
+        .school-card {
+            background: white;
+            border: 1px solid #dbe3ef;
+            border-radius: 16px;
+            padding: 22px;
+        }
+
+        .stat-card span {
+            color: #61708a;
+            font-size: 14px;
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 31px;
+            margin-top: 10px;
+        }
+
+        .school-card {
+            margin-bottom: 18px;
+        }
+
+        .school-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .school-name {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .school-code {
+            color: #65728a;
+            margin-top: 6px;
+        }
+
+        .school-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .mini {
+            background: #f5f8fd;
+            padding: 13px;
+            border-radius: 10px;
+        }
+
+        .mini strong {
+            display: block;
+            font-size: 20px;
+        }
+
+        .status-active {
+            color: #08783e;
+            font-weight: 700;
+        }
+
+        .status-inactive {
+            color: #b42318;
+            font-weight: 700;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            padding: 11px 17px;
+            border-radius: 9px;
+            font-weight: 700;
+            background: #153f7a;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e8eef8;
+            color: #153f7a;
+        }
+
+        @media (max-width: 800px) {
+            .stats,
+            .school-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .school-top {
+                display: block;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .stats,
+            .school-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .ceo-wrap {
+                width: 92%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="ceo-header">
+    <div>
+        <h2>School Portal</h2>
+        <small>Platform Administration</small>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:center;">
+        <span>CEO</span>
+        <a
+            href="{% url 'platform_owner_logout' %}"
+            style="
+                color:white;
+                text-decoration:none;
+                border:1px solid rgba(255,255,255,.65);
+                padding:8px 13px;
+                border-radius:8px;
+                font-weight:700;
+            "
+        >
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="ceo-wrap">
+
+    <span class="badge">PLATFORM OWNER</span>
+
+    <h1>CEO Dashboard</h1>
+    <p>
+        Monitor and manage every school connected to the platform.
+    </p>
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <span>Total Schools</span>
+            <strong>{{ total_schools }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Active Schools</span>
+            <strong>{{ active_schools }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Inactive / Suspended</span>
+            <strong>{{ inactive_schools }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Total Students</span>
+            <strong>{{ total_students }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Total Teachers</span>
+            <strong>{{ total_teachers }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>School Administrators</span>
+            <strong>{{ total_school_admins }}</strong>
+        </div>
+
+    </section>
+
+
+
+    <article class="school-card" style="margin-bottom:28px;">
+        <div class="school-top">
+            <div>
+                <div class="school-name">Create New School</div>
+                <div class="school-code">Register a complete school portal and its first administrator.</div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'platform_owner_create_school' %}">
+            {% csrf_token %}
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px;">
+
+                <div>
+                    <label><strong>School Name *</strong></label>
+                    <input type="text" name="school_name" required
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+                <div>
+                    <label><strong>School Motto</strong></label>
+                    <input type="text" name="motto"
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+                <div>
+                    <label><strong>School Email</strong></label>
+                    <input type="email" name="school_email"
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+                <div>
+                    <label><strong>School Phone</strong></label>
+                    <input type="text" name="school_phone"
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+                <div style="grid-column:1/-1;">
+                    <label><strong>School Address</strong></label>
+                    <textarea name="address" rows="2"
+                              style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;"></textarea>
+                </div>
+
+                <div>
+                    <label><strong>Administrator First Name *</strong></label>
+                    <input type="text" name="admin_first_name" required
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+                <div>
+                    <label><strong>Administrator Surname *</strong></label>
+                    <input type="text" name="admin_surname" required
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+                <div>
+                    <label><strong>Administrator Phone *</strong></label>
+                    <input type="text" name="admin_phone" required
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+                <div>
+                    <label><strong>Temporary Password *</strong></label>
+                    <input type="password" name="temporary_password" minlength="6" required
+                           style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;">
+                </div>
+
+            </div>
+
+            
+        <div>
+            <label><strong>Academic Session *</strong></label>
+            <input
+                type="text"
+                name="academic_session"
+                placeholder="e.g. 2026/2027"
+                required
+                style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;"
+            >
+        </div>
+
+        <div>
+            <label><strong>Starting Term *</strong></label>
+            <select
+                name="starting_term"
+                required
+                style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;"
+            >
+                <option value="">Select starting term</option>
+                <option value="FIRST">First Term</option>
+                <option value="SECOND">Second Term</option>
+                <option value="THIRD">Third Term</option>
+            </select>
+        </div>
+
+<button type="submit" class="btn" style="margin-top:18px;">
+                Create School
+            </button>
+        </form>
+    </article>
+
+    <h2>Schools</h2>
+
+    {% for row in school_rows %}
+
+        <article class="school-card">
+
+            <div class="school-top">
+
+                <div>
+                    <div class="school-name">
+                        {{ row.school.name }}
+                    </div>
+
+                    <div class="school-code">
+                        School Code: {{ row.school.code }}
+                    </div>
+                </div>
+
+                <div>
+                    {% if row.school.is_active %}
+                        <span class="status-active">● ACTIVE</span>
+                    {% else %}
+                        <span class="status-inactive">● INACTIVE</span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+
+            <div class="school-stats">
+
+                <div class="mini">
+                    <strong>{{ row.student_count }}</strong>
+                    Students
+                </div>
+
+                <div class="mini">
+                    <strong>{{ row.teacher_count }}</strong>
+                    Teachers
+                </div>
+
+                <div class="mini">
+                    <strong>{{ row.admin_count }}</strong>
+                    Administrators
+                </div>
+
+            </div>
+
+
+            <p>
+                <strong>Plan:</strong>
+                {{ row.school.get_subscription_plan_display }}
+            </p>
+
+            <p>
+                <strong>Subscription:</strong>
+                {{ row.school.get_subscription_status_display }}
+            </p>
+
+            <p>
+                <strong>Expiry:</strong>
+                {% if row.school.subscription_expiry_date %}
+                    {{ row.school.subscription_expiry_date }}
+                {% else %}
+                    No expiry set
+                {% endif %}
+            </p>
+
+            <p>
+                <strong>School Admin Fee Control:</strong>
+                {% if row.school.school_admin_can_manage_fees %}
+                    Enabled
+                {% else %}
+                    Disabled
+                {% endif %}
+            </p>
+
+
+            <div class="actions">
+
+                <a
+                    class="btn"
+                    href="{% url 'school_portal' row.school.slug %}"
+                    target="_blank"
+                >
+                    Open School Portal
+                </a>
+
+                
+<a
+    href="{% url 'platform_owner_manage_school' row.school.id %}"
+    class="btn secondary"
+>
+    Manage School
+</a>
+
+
+            </div>
+
+        </article>
+
+    {% empty %}
+
+        <div class="school-card">
+            No schools have been registered yet.
+        </div>
+
+    {% endfor %}
+
+</main>
+
+</body>
+</html>

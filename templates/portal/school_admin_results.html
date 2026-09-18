@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Dashboard | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            RESULTS MANAGEMENT
+        </span>
+
+        <h1>Class Results Status</h1>
+
+        {% if session and term %}
+            <p>
+                {{ session.name }} — {{ term.get_name_display }}
+            </p>
+
+        <div style="margin:20px 0;">
+            <a href="{% url 'school_admin_result_audit' %}"
+               class="portal-button secondary">
+                View Result Audit History
+            </a>
+        </div>
+        {% else %}
+            <div class="child-card">
+                <h3>No current session or term</h3>
+                <p>
+                    Set a current academic session and term first.
+                </p>
+            </div>
+        {% endif %}
+
+    
+    <div class="child-card" style="margin:20px 0; text-align:left;">
+        <h3>Find Student Result</h3>
+
+        <form method="get" style="display:flex; gap:10px; flex-wrap:wrap;">
+            <input
+                type="text"
+                name="q"
+                value="{{ search_query }}"
+                placeholder="Name, admission number or parent phone"
+                style="flex:1; min-width:240px; padding:12px; border:1px solid #ccc; border-radius:8px;"
+            >
+
+            <button type="submit" class="portal-button secondary">
+                Search Student
+            </button>
+
+            {% if search_query %}
+                <a href="{% url 'school_admin_results' %}"
+                   class="portal-button secondary">
+                    Clear
+                </a>
+            {% endif %}
+        </form>
+
+        {% if search_query %}
+            <div style="margin-top:20px;">
+                <h3>Search Results</h3>
+
+                {% for student in search_results %}
+                    <div style="padding:15px 0; border-top:1px solid #e5e7eb;">
+                        <p><strong>{{ student.full_name }}</strong></p>
+
+                        <p>
+                            <strong>Admission Number:</strong>
+                            {{ student.admission_number }}
+                        </p>
+
+                        <p>
+                            <strong>Class:</strong>
+                            {% if student.current_class %}
+                                {{ student.current_class.display_name }}
+                            {% else %}
+                                Not Assigned
+                            {% endif %}
+                        </p>
+
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <a href="{% url 'school_admin_student_report' student.uuid %}"
+                               class="portal-button secondary">
+                                View Report
+                            </a>
+
+                            <a href="{% url 'school_admin_student_result_history' student.uuid %}"
+                               class="portal-button secondary">
+                                Result History
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No matching student found.</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    {% for status in class_statuses %}
+            <div class="child-card" style="margin-top:15px; text-align:left;">
+
+                <h3>
+                    {{ status.school_class.display_name }}
+                </h3>
+
+                <p>
+                    <strong>Total Students:</strong>
+                    {{ status.total_students }}
+                </p>
+
+                <p>
+                    <strong>Complete:</strong>
+                    {{ status.complete_count }}
+                </p>
+
+                <p>
+                    <strong>Incomplete:</strong>
+                    {{ status.incomplete_count }}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+
+                    {% if status.is_ready %}
+                        READY TO PUBLISH
+                    {% else %}
+                        NOT READY
+                    {% endif %}
+                </p>
+
+                <div style="margin-top:12px;">
+                    <a
+                        href="/school-admin/results/class/{{ status.school_class.id }}/"
+                        class="portal-button secondary"
+                    >
+                        View Class Details
+                    </a>
+                </div>
+
+            </div>
+        {% empty %}
+
+            {% if session and term %}
+                <div class="child-card">
+                    <h3>No active classes found</h3>
+                </div>
+            {% endif %}
+
+        {% endfor %}
+
+    </section>
+</main>
+
+</body>
+</html>

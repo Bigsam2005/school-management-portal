@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Login | School Portal</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f4f7fb;
+            font-family: Arial, sans-serif;
+            color: #102345;
+        }
+
+        .topbar {
+            background: #153f7a;
+            color: white;
+            padding: 22px 7%;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .wrap {
+            min-height: calc(100vh - 90px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 520px;
+            background: white;
+            border: 1px solid #dbe3ef;
+            border-radius: 18px;
+            padding: 34px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e6eefb;
+            color: #153f7a;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 18px 0 8px;
+            font-size: 34px;
+        }
+
+        .sub {
+            color: #66758f;
+            margin-bottom: 26px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin: 16px 0 8px;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+            border: 1px solid #ccd6e5;
+            border-radius: 9px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            background: #153f7a;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .error {
+            margin-top: 18px;
+            padding: 12px 14px;
+            background: #fff3f2;
+            border: 1px solid #f2b8b5;
+            color: #b42318;
+            border-radius: 9px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="topbar">
+    School Portal
+</div>
+
+<div class="wrap">
+    <div class="card">
+
+        <span class="badge">PLATFORM OWNER</span>
+
+        <h1>CEO Login</h1>
+
+        <div class="sub">
+            Sign in to the central platform administration dashboard.
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label for="phone">Phone Number</label>
+            <input
+                type="text"
+                id="phone"
+                name="phone"
+                required
+            >
+
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                required
+            >
+
+            <button type="submit">
+                Login to CEO Dashboard
+            </button>
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>

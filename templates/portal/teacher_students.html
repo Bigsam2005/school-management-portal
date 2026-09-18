@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Students | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/teacher/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/teacher/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            MY STUDENTS
+        </span>
+
+        <h1>Assigned Students</h1>
+
+        <p>
+            Search and view students in your assigned classes.
+        </p>
+
+        {% if registration_success %}
+            <div class="child-card" style="margin:20px 0; text-align:left;">
+                <h3>Student Registered Successfully</h3>
+
+                <p>
+                    <strong>Student:</strong>
+                    {{ registration_success.student_name }}
+                </p>
+
+                <p>
+                    <strong>Admission Number:</strong>
+                    {{ registration_success.admission_number }}
+                </p>
+
+                <p>
+                    <strong>Parent Phone:</strong>
+                    {{ registration_success.parent_phone }}
+                </p>
+
+                {% if registration_success.parent_created %}
+                    <p>
+                        <strong>Temporary Password:</strong>
+                        {{ registration_success.temporary_password }}
+                    </p>
+
+                    <p>
+                        Please give these login details to the parent/guardian.
+                    </p>
+                {% else %}
+                    <p>
+                        Existing parent account linked successfully.
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <form method="get" style="margin:25px 0;">
+            <div class="login-field">
+                <label for="q">
+                    Search Student
+                </label>
+
+                <input
+                    type="text"
+                    id="q"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Name or admission number"
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="portal-button login-button"
+            >
+                Search
+            </button>
+        </form>
+
+        {% if students %}
+
+            {% for student in students %}
+                <div class="child-card" style="margin-top:15px; text-align:left;">
+
+                    <h3>{{ student.full_name }}</h3>
+
+                    <p>
+                        <strong>Admission Number:</strong>
+                        {{ student.admission_number }}
+                    </p>
+
+                    <p>
+                        <strong>Class:</strong>
+                        {{ student.current_class.display_name }}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        {{ student.get_status_display }}
+                    </p>
+                    {% if student.current_class.section.name == "Senior Secondary" %}
+                        <p>
+                            <strong>Department:</strong>
+                            {% if student.department %}
+                                {{ student.get_department_display }}
+                            {% else %}
+                                Not Assigned
+                            {% endif %}
+                        </p>
+
+                        <div style="margin-top:12px;">
+                            <a
+                                href="/teacher/students/{{ student.uuid }}/department/"
+                                class="portal-button secondary"
+                            >
+                                Set Department
+                            </a>
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+        {% else %}
+
+            <div class="child-card">
+                <h3>No students found</h3>
+
+                <p>
+                    No student in your assigned classes matches this search.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

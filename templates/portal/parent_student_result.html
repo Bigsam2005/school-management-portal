@@ -1,0 +1,584 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {{ student.full_name }} Result | {{ school.name }}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'portal/style.css' %}"
+    >
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+    <style>
+        .result-page {
+            max-width: 900px;
+            margin: 35px auto;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 35px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+
+        .result-school-header {
+            text-align: center;
+            border-bottom: 3px solid #153e75;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .result-school-header h1 {
+            margin: 0;
+            color: #102a43;
+            font-size: 30px;
+        }
+
+        .result-school-header h2 {
+            margin: 8px 0 0;
+            font-size: 18px;
+            color: #486581;
+        }
+
+        .result-title {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 7px 18px;
+            border-radius: 999px;
+            background: #eaf2ff;
+            color: #0b3b82;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .student-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 28px;
+            border: 1px solid #d9e2ec;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .student-info-grid p {
+            margin: 0;
+            line-height: 1.7;
+        }
+
+        .result-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .result-table th,
+        .result-table td {
+            border: 1px solid #d9e2ec;
+            padding: 11px 10px;
+            text-align: center;
+        }
+
+        .result-table th {
+            background: #153e75;
+            color: white;
+            font-weight: 700;
+        }
+
+        .result-table td:first-child,
+        .result-table th:first-child {
+            text-align: left;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .summary-box {
+            border: 1px solid #d9e2ec;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            background: #f8fafc;
+        }
+
+        .summary-box strong {
+            display: block;
+            margin-bottom: 7px;
+            color: #486581;
+            font-size: 13px;
+        }
+
+        .summary-box span {
+            font-size: 20px;
+            font-weight: 700;
+            color: #102a43;
+        }
+
+        .performance-box {
+            margin-top: 20px;
+            border-radius: 12px;
+            padding: 17px;
+            text-align: center;
+            border: 1px solid #d9e2ec;
+        }
+
+        .remarks-section {
+            margin-top: 25px;
+        }
+
+        .remark-card {
+            border: 1px solid #d9e2ec;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 14px;
+        }
+
+        .remark-card h3 {
+            margin-top: 0;
+            color: #102a43;
+        }
+
+        .grade-guide {
+            margin-top: 25px;
+            border-top: 1px solid #d9e2ec;
+            padding-top: 18px;
+            text-align: center;
+            color: #627d98;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 30px 0 10px;
+            flex-wrap: wrap;
+        }
+
+        .print-button {
+            border: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 700px) {
+            .result-page {
+                margin: 15px;
+                padding: 20px;
+            }
+
+            .student-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media print {
+            body {
+                background: white !important;
+            }
+
+            .portal-header,
+            .result-actions {
+                display: none !important;
+            }
+
+            .result-page {
+                margin: 0;
+                max-width: none;
+                border-radius: 0;
+                box-shadow: none;
+                padding: 15px;
+            }
+
+            .result-table th {
+                background: #eeeeee !important;
+                color: black !important;
+            }
+
+            @page {
+                size: A4;
+                margin: 12mm;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        {% if request.user.role == "SCHOOL_ADMIN" %}
+            <a href="{% url 'school_admin_dashboard' %}" class="admin-link">Dashboard</a>
+            <a href="{% url 'school_admin_logout' %}" class="admin-link">Logout</a>
+
+        {% elif request.user.role == "TEACHER" %}
+            <a href="{% url 'teacher_dashboard' %}" class="admin-link">Dashboard</a>
+            <a href="{% url 'teacher_logout' %}" class="admin-link">Logout</a>
+
+        {% else %}
+            <a href="{% url 'parent_dashboard' %}" class="admin-link">Dashboard</a>
+            <a href="{% url 'parent_logout' %}" class="admin-link">Logout</a>
+        {% endif %}
+    </div>
+</header>
+
+<main>
+
+    <div class="result-page">
+
+        <div class="result-school-header">
+
+            <h1>
+                {{ school.name }}
+            </h1>
+
+            <h2>
+                Student Academic Report
+            </h2>
+
+            <span class="result-title">
+                {{ session.name }} —
+                {{ term.get_name_display }}
+            </span>
+
+        </div>
+
+
+        <div class="student-info-grid">
+
+            <p>
+                <strong>Student:</strong><br>
+                {{ student.full_name }}
+            </p>
+
+            <p>
+                <strong>Admission Number:</strong><br>
+                {{ student.admission_number }}
+            </p>
+
+            <p>
+                <strong>Class:</strong><br>
+                {{ summary.school_class.display_name }}
+            </p>
+
+            {% if student.department %}
+                <p>
+                    <strong>Department:</strong><br>
+                    {{ student.get_department_display }}
+                </p>
+            {% endif %}
+
+            <p>
+                <strong>Academic Session:</strong><br>
+                {{ session.name }}
+            </p>
+
+            <p>
+                <strong>Term:</strong><br>
+                {{ term.get_name_display }}
+            </p>
+
+        </div>
+
+
+        <div class="result-table-wrapper">
+
+            <table class="result-table">
+
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>CA</th>
+                        <th>Exam</th>
+                        <th>Total</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for result in results %}
+
+                        <tr>
+
+                            <td>
+                                {{ result.subject.name }}
+                            </td>
+
+                            <td>
+                                {{ result.ca_score }}
+                            </td>
+
+                            <td>
+                                {{ result.exam_score }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ result.total_score }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ result.grade }}
+                                </strong>
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="summary-grid">
+
+            <div class="summary-box">
+                <strong>Subjects Taken</strong>
+                <span>
+                    {{ summary.subject_count }}
+                </span>
+            </div>
+
+            <div class="summary-box">
+                <strong>Total Score</strong>
+                <span>
+                    {{ summary.total_score }}
+                </span>
+            </div>
+
+            <div class="summary-box">
+                <strong>Average</strong>
+                <span>
+                    {{ summary.average_score }}%
+                </span>
+            </div>
+
+            <div class="summary-box">
+                <strong>Class Position</strong>
+
+                <span>
+                    {% if summary.position %}
+                        {{ summary.position }}{% if summary.position == 1 %}st{% elif summary.position == 2 %}nd{% elif summary.position == 3 %}rd{% else %}th{% endif %}
+                        out of {{ class_size }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="performance-box">
+
+            <strong>Overall Performance:</strong>
+
+            {% if summary.average_score >= 80 %}
+                Excellent
+
+            {% elif summary.average_score >= 70 %}
+                Very Good
+
+            {% elif summary.average_score >= 60 %}
+                Good
+
+            {% elif summary.average_score >= 50 %}
+                Fair
+
+            {% elif summary.average_score >= 40 %}
+                Needs Improvement
+
+            {% else %}
+                Significant Improvement Required
+            {% endif %}
+
+        </div>
+
+        <div class="performance-box">
+            <strong>Next Term Resumption:</strong>
+
+            {% if publication.next_term_resumption_date %}
+                {{ publication.next_term_resumption_date|date:"j F Y" }}
+            {% else %}
+                Not Announced
+            {% endif %}
+        </div>
+
+
+        {% if annual_summary %}
+            <div class="child-card" style="margin-top:25px; text-align:left;">
+
+                <h3>Annual / Cumulative Performance</h3>
+
+                <p>
+                    <strong>First Term Average:</strong>
+                    {{ annual_summary.first_term_average }}%
+                </p>
+
+                <p>
+                    <strong>Second Term Average:</strong>
+                    {{ annual_summary.second_term_average }}%
+                </p>
+
+                <p>
+                    <strong>Third Term Average:</strong>
+                    {{ annual_summary.third_term_average }}%
+                </p>
+
+                <p>
+                    <strong>Annual Average:</strong>
+                    {{ annual_summary.annual_average }}%
+                </p>
+
+                <p>
+                    <strong>Annual Position:</strong>
+
+                    {% if annual_summary.annual_position %}
+                        {{ annual_summary.annual_position }}{% if annual_summary.annual_position == 1 %}st{% elif annual_summary.annual_position == 2 %}nd{% elif annual_summary.annual_position == 3 %}rd{% else %}th{% endif %}
+                        out of {{ class_size }}
+                    {% else %}
+                        Not Available
+                    {% endif %}
+                </p>
+
+                <p>
+                    <strong>Promotion Status:</strong>
+                    {{ annual_summary.get_promotion_status_display }}
+                </p>
+
+            </div>
+        {% endif %}
+
+
+        <div class="remarks-section">
+
+            <div class="remark-card">
+
+                <h3>
+                    Class Teacher's Remark
+                </h3>
+
+                <p>
+                    {{ teacher_remark }}
+                </p>
+
+            </div>
+
+
+            <div class="remark-card">
+
+                <h3>
+                    School Management's Remark
+                </h3>
+
+                <p>
+                    {{ management_remark }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:40px;
+            margin-top:40px;
+            text-align:center;
+        ">
+
+            <div>
+                <div style="
+                    border-top:1px solid #102a43;
+                    padding-top:8px;
+                    margin-top:35px;
+                ">
+                    Class Teacher's Signature
+                </div>
+            </div>
+
+            <div>
+                <div style="
+                    border-top:1px solid #102a43;
+                    padding-top:8px;
+                    margin-top:35px;
+                ">
+                    School Management / Principal
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="grade-guide">
+
+            <strong>Grading Scale</strong><br>
+
+            A = 80–100 &nbsp; |
+            B = 70–79 &nbsp; |
+            C = 60–69 &nbsp; |
+            D = 50–59 &nbsp; |
+            E = 40–49 &nbsp; |
+            F = 0–39
+
+        </div>
+
+
+        <div class="result-actions">
+
+            <button
+                type="button"
+                onclick="window.print()"
+                class="portal-button print-button"
+            >
+                Print / Save Result
+            </button>
+
+            <a
+                href="/parent/dashboard/"
+                class="portal-button secondary"
+            >
+                Back to Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</main>
+
+</body>
+</html>

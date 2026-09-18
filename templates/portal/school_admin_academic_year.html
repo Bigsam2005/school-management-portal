@@ -1,0 +1,220 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Year Management | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            ACADEMIC YEAR
+        </span>
+
+        <h1>
+            Academic Year Management
+        </h1>
+
+        {% if session %}
+<p>
+    {{ session.name }}
+</p>
+{% else %}
+<div class="child-card" style="margin-top:20px; text-align:left;">
+    <h3>Academic setup not configured</h3>
+    <p>
+        No academic session has been configured for this school yet.
+        Initial academic setup can be completed by the platform administrator.
+    </p>
+</div>
+{% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="child-card" style="margin-top:15px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="child-card" style="margin-top:20px; text-align:left;">
+
+            <h3>Current Term</h3>
+
+            {% if current_term %}
+                <p style="font-size:20px; font-weight:700;">
+                    {{ current_term.get_name_display }}
+                </p>
+            {% else %}
+                <p>No current term is set.</p>
+            {% endif %}
+
+        </div>
+
+        <div class="child-card" style="margin-top:20px; text-align:left;">
+
+            <h3>Term Status</h3>
+
+            {% for term in terms %}
+                <p>
+                    <strong>{{ term.get_name_display }}:</strong>
+
+                    {% if term.is_current %}
+                        CURRENT
+                    {% elif term.is_active %}
+                        AVAILABLE
+                    {% else %}
+                        INACTIVE
+                    {% endif %}
+                </p>
+            {% empty %}
+                <p>No terms found for this session.</p>
+            {% endfor %}
+
+        </div>
+
+        {% if next_term_name %}
+            <div class="child-card" style="margin-top:20px; text-align:left;">
+
+                <h3>
+                    Start Next Term
+                </h3>
+
+                <p>
+                    The portal will keep all previous-term results,
+                    publications, positions and reports safely stored.
+                </p>
+
+                <p>
+                    All active classes must have published results for
+                    {{ current_term.get_name_display }} before the next term can start.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="term"
+                        value="{{ next_term_name }}"
+                    >
+
+                    <button
+                        type="submit"
+                        class="portal-button"
+                        onclick="return confirm('Are you sure you want to start the next academic term?');"
+                    >
+                        {% if next_term_name == "SECOND" %}
+                            Start Second Term
+                        {% elif next_term_name == "THIRD" %}
+                            Start Third Term
+                        {% endif %}
+                    </button>
+                </form>
+
+            </div>
+
+        {% elif current_term and current_term.name == "THIRD" %}
+
+            <div class="child-card" style="margin-top:20px; text-align:left;">
+
+                <h3>
+                    Third Term / End of Session
+                </h3>
+
+                <p>
+                    Complete Third Term results, review Annual Results,
+                    and finish all Promotion decisions before starting
+                    the next academic session.
+                </p>
+
+                <a
+                    href="/school-admin/promotions/"
+                    class="portal-button secondary"
+                    style="display:inline-block; margin-top:10px;"
+                >
+                    Open Promotion Management
+                </a>
+
+            </div>
+
+            <div class="child-card" style="margin-top:20px; text-align:left;">
+
+                <h3>
+                    Start New Academic Session
+                </h3>
+
+                <p>
+                    This will apply all confirmed promotion decisions,
+                    move promoted students to their next classes,
+                    keep repeaters in their current classes,
+                    mark final-class students as graduated,
+                    and start First Term of the new session.
+                </p>
+
+                <form
+                    method="post"
+                    action="/school-admin/academic-year/start-new-session/"
+                >
+                    {% csrf_token %}
+
+                    <div class="login-field" style="margin-bottom:15px;">
+                        <label for="new_session_name">
+                            New Academic Session
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_session_name"
+                            name="new_session_name"
+                            placeholder="Example: 2027/2028"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="portal-button"
+                        onclick="return confirm('Start the new academic session and apply all promotion decisions?');"
+                    >
+                        Start New Academic Session
+                    </button>
+                </form>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

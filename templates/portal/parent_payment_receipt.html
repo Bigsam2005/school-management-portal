@@ -1,0 +1,195 @@
+{% load static %}
+{% load money %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt | {{ student.full_name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+    <style>
+        .receipt-card {
+            background: white;
+            border: 1px solid #d9e1ee;
+            border-radius: 18px;
+            padding: 30px;
+            text-align: left;
+            margin-top: 25px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid #edf1f7;
+        }
+
+        .receipt-row:last-child {
+            border-bottom: none;
+        }
+
+        .receipt-status {
+            display: inline-block;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            font-weight: 700;
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        @media print {
+            .portal-header,
+            .receipt-actions {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
+
+            .hero {
+                padding: 0;
+            }
+
+            .hero-content {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ student.school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a
+            href="/parent/student/{{ student.uuid }}/fees/"
+            class="admin-link"
+        >
+            Back to Fees
+        </a>
+
+        <a
+            href="/parent/logout/"
+            class="admin-link"
+        >
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            PAYMENT RECEIPT
+        </span>
+
+        <h1>School Fee Receipt</h1>
+
+        <p>
+            Official payment record for {{ student.school.name }}
+        </p>
+
+        <div class="receipt-card">
+
+            <div class="receipt-row">
+                <strong>Status</strong>
+                <span class="receipt-status">PAID</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Student</strong>
+                <span>{{ student.full_name }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Admission Number</strong>
+                <span>{{ student.admission_number }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Class</strong>
+                <span>{{ student.current_class.display_name }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Session</strong>
+                <span>{{ fee_structure.session.name }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Term</strong>
+                <span>{{ fee_structure.term.get_name_display }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>School Fee Payment</strong>
+                <span>{{ payment.amount|naira }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Portal / Service Fee</strong>
+                <span>{{ service_fee|naira }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Total Charged</strong>
+                <span>{{ total_charged|naira }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Payment Reference</strong>
+                <span>{{ payment.reference }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <strong>Payment Date</strong>
+                <span>{{ payment.paid_at }}</span>
+            </div>
+
+        </div>
+
+        <div class="receipt-actions">
+
+            <button
+                type="button"
+                class="portal-button"
+                onclick="window.print()"
+            >
+                Save / Print Receipt
+            </button>
+
+            <a
+                href="/parent/student/{{ student.uuid }}/fees/"
+                class="portal-button secondary"
+            >
+                Back to School Fees
+            </a>
+
+        </div>
+
+    </section>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,761 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Manage {{ school.name }} | CEO</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f7fb;
+            color: #102345;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            background: #1d477f;
+            color: white;
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .top-actions a {
+            color: white;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,.6);
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-weight: 700;
+        }
+
+        .wrap {
+            max-width: 1050px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e6eefb;
+            color: #153f7a;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 5px;
+            font-size: 34px;
+        }
+
+        .school-code {
+            color: #60708a;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #dbe3ef;
+            border-radius: 16px;
+            padding: 26px;
+            margin-bottom: 20px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .mini {
+            background: #f5f8fc;
+            padding: 18px;
+            border-radius: 11px;
+        }
+
+        .mini strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        label {
+            display: block;
+            margin: 18px 0 8px;
+            font-weight: 700;
+        }
+
+        select,
+        input[type="date"] {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ccd6e5;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-top: 18px;
+            padding: 16px;
+            background: #f5f8fc;
+            border-radius: 10px;
+        }
+
+        .switch-row input {
+            width: 22px;
+            height: 22px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 24px;
+            padding: 14px;
+            border: 0;
+            border-radius: 9px;
+            background: #1d477f;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .message {
+            padding: 13px 16px;
+            border-radius: 9px;
+            background: #eef7ef;
+            border: 1px solid #b7d8bd;
+            margin-bottom: 18px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 700px) {
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                gap: 15px;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        School Portal — CEO
+    </div>
+
+    <div class="top-actions">
+        <a href="{% url 'platform_owner_dashboard' %}">
+            Dashboard
+        </a>
+
+        <a href="{% url 'platform_owner_logout' %}">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="wrap">
+
+    <span class="badge">MANAGE SCHOOL</span>
+
+    <h1>{{ school.name }}</h1>
+
+    <div class="school-code">
+        School Code: {{ school.code }}
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <section class="card">
+        <h2>School Status</h2>
+
+        <div class="status-grid">
+
+            <div class="mini">
+                <strong>Current Plan</strong>
+                {{ school.get_subscription_plan_display }}
+            </div>
+
+            <div class="mini">
+                <strong>Subscription</strong>
+                {{ school.get_subscription_status_display }}
+            </div>
+
+            <div class="mini">
+                <strong>Portal</strong>
+
+                {% if school.is_active %}
+                    Active
+                {% else %}
+                    Inactive
+                {% endif %}
+            </div>
+
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>School Branding</h2>
+
+        <p style="margin-bottom:20px;">
+            Choose the colours used across this school's portal.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save_branding">
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px;">
+
+                <div>
+                    <label for="primary_color">
+                        <strong>Primary Colour</strong>
+                    </label>
+
+                    <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+                        <input
+                            type="color"
+                            id="primary_color"
+                            name="primary_color"
+                            value="{{ school.primary_color }}"
+                            style="width:65px; height:48px; cursor:pointer;"
+                        >
+                        <strong id="primaryValue">{{ school.primary_color }}</strong>
+                    </div>
+
+                    <p style="font-size:13px; margin-top:8px;">
+                        Main headers, buttons and important highlights.
+                    </p>
+                </div>
+
+                <div>
+                    <label for="secondary_color">
+                        <strong>Secondary Colour</strong>
+                    </label>
+
+                    <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+                        <input
+                            type="color"
+                            id="secondary_color"
+                            name="secondary_color"
+                            value="{{ school.secondary_color }}"
+                            style="width:65px; height:48px; cursor:pointer;"
+                        >
+                        <strong id="secondaryValue">{{ school.secondary_color }}</strong>
+                    </div>
+
+                    <p style="font-size:13px; margin-top:8px;">
+                        Supporting colour used for contrast and accents.
+                    </p>
+                </div>
+
+            </div>
+
+            <div
+                id="brandingPreview"
+                style="
+                    margin-top:22px;
+                    padding:22px;
+                    border-radius:14px;
+                    background:{{ school.primary_color }};
+                    color:{{ school.secondary_color }};
+                    font-size:18px;
+                    font-weight:700;
+                    text-align:center;
+                "
+            >
+                {{ school.name }}
+            </div>
+
+            <button type="submit" style="width:100%; margin-top:18px;">
+                Save School Branding
+            </button>
+        </form>
+    </section>
+
+    <section class="card">
+
+        <h2>Platform Controls</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label for="subscription_plan">
+                Subscription Plan
+            </label>
+
+            <select
+                id="subscription_plan"
+                name="subscription_plan"
+            >
+                <option
+                    value="LIFETIME_FREE"
+                    {% if school.subscription_plan == "LIFETIME_FREE" %}selected{% endif %}
+                >
+                    Lifetime Free
+                </option>
+
+                <option
+                    value="BASIC"
+                    {% if school.subscription_plan == "BASIC" %}selected{% endif %}
+                >
+                    Basic
+                </option>
+
+                <option
+                    value="PREMIUM"
+                    {% if school.subscription_plan == "PREMIUM" %}selected{% endif %}
+                >
+                    Premium
+                </option>
+
+                <option
+                    value="ENTERPRISE"
+                    {% if school.subscription_plan == "ENTERPRISE" %}selected{% endif %}
+                >
+                    Enterprise
+                </option>
+            </select>
+
+
+            <label for="subscription_status">
+                Subscription Status
+            </label>
+
+            <select
+                id="subscription_status"
+                name="subscription_status"
+            >
+                <option
+                    value="ACTIVE"
+                    {% if school.subscription_status == "ACTIVE" %}selected{% endif %}
+                >
+                    Active
+                </option>
+
+                <option
+                    value="EXPIRED"
+                    {% if school.subscription_status == "EXPIRED" %}selected{% endif %}
+                >
+                    Expired
+                </option>
+
+                <option
+                    value="SUSPENDED"
+                    {% if school.subscription_status == "SUSPENDED" %}selected{% endif %}
+                >
+                    Suspended
+                </option>
+            </select>
+
+
+            <label for="subscription_expiry_date">
+                Subscription Expiry Date
+            </label>
+
+            <input
+                type="date"
+                id="subscription_expiry_date"
+                name="subscription_expiry_date"
+                value="{% if school.subscription_expiry_date %}{{ school.subscription_expiry_date|date:'Y-m-d' }}{% endif %}"
+            >
+
+
+            <div class="switch-row">
+                <div>
+                    <strong>School Portal Active</strong>
+                    <div>
+                        Allow this school to use the platform.
+                    </div>
+                </div>
+
+                <input
+                    type="checkbox"
+                    name="is_active"
+                    {% if school.is_active %}checked{% endif %}
+                >
+            </div>
+
+
+            <div class="switch-row">
+                <div>
+                    <strong>School Admin Fee Control</strong>
+                    <div>
+                        Allow this school's administrator to
+                        create and manage school fee structures.
+                    </div>
+                </div>
+
+                <input
+                    type="checkbox"
+                    name="school_admin_can_manage_fees"
+                    {% if school.school_admin_can_manage_fees %}checked{% endif %}
+                >
+            </div>
+
+            <button type="submit">
+                Save School Settings
+            </button>
+
+        
+        <div style="margin-top:28px; padding-top:24px; border-top:1px solid #dbe3ef;">
+            <h2>Payment & Settlement</h2>
+
+            <p>
+                Configure the platform service charge and the school's
+                settlement bank account for online payments.
+            </p>
+
+            <label for="portal_service_fee">
+                <strong>Portal Service Fee (₦)</strong>
+            </label>
+            <input
+                type="number"
+                id="portal_service_fee"
+                name="portal_service_fee"
+                min="0"
+                step="0.01"
+                value="{{ school.portal_service_fee }}"
+            >
+
+            
+    <label for="settlement_bank_select">
+        <strong>Settlement Bank</strong>
+    </label>
+
+    <select
+        id="settlement_bank_select"
+        style="width:100%;padding:11px;margin-top:6px;box-sizing:border-box;"
+    >
+        <option value="">Loading banks...</option>
+    </select>
+
+    <input
+        type="hidden"
+        id="settlement_bank_name"
+        name="settlement_bank_name"
+        value="{{ school.settlement_bank_name }}"
+    >
+
+    <input
+        type="hidden"
+        id="settlement_bank_code"
+        name="settlement_bank_code"
+        value="{{ school.settlement_bank_code }}"
+    >
+
+<label for="settlement_account_number">
+                <strong>Account Number</strong>
+            </label>
+            <input
+                type="text"
+                id="settlement_account_number"
+                name="settlement_account_number"
+                inputmode="numeric"
+                value="{{ school.settlement_account_number }}"
+            >
+
+            <label for="settlement_account_name">
+                <strong>Account Name</strong>
+            </label>
+            <input
+                type="text"
+                id="settlement_account_name"
+                name="settlement_account_name"
+                value="{{ school.settlement_account_name }}"
+            
+        readonly
+        placeholder="Verified account name will appear here"
+    >
+
+    <button
+        type="button"
+        id="verify-bank-account-button"
+        style="margin-top:10px;"
+    >
+        Verify Account
+    </button>
+
+    <p id="bank-verification-message" style="margin-top:8px;"></p>
+
+
+            <p>
+                <strong>Paystack Subaccount:</strong>
+                {% if school.paystack_subaccount_code %}
+                    {{ school.paystack_subaccount_code }}
+                {% else %}
+                    Not created yet
+                {% endif %}
+            </p>
+
+            <p>
+                <strong>Online Payment:</strong>
+                {% if school.paystack_subaccount_active %}
+                    Active
+                {% else %}
+                    Not configured
+                {% endif %}
+            </p>
+        </div>
+
+
+</form>
+
+<div class="child-card" style="margin-top:25px;">
+    <h2>Classes Offered</h2>
+
+    <p>
+        Select the classes this school currently operates.
+        Unchecked classes will remain in the system but will be inactive.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_classes">
+
+        {% for section in class_sections %}
+            <div style="margin-top:20px;">
+                <h3>{{ section.name }}</h3>
+
+                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                    {% for class in section.classes.all %}
+                        <label style="border:1px solid #ddd; border-radius:8px; padding:10px 14px;">
+                            <input
+                                type="checkbox"
+                                name="active_classes"
+                                value="{{ class.id }}"
+                                {% if class.is_active %}checked{% endif %}
+                            >
+                            {{ class.display_name }}
+                        </label>
+                    {% empty %}
+                        <p>No classes in this section.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% empty %}
+            <p>No academic classes found for this school.</p>
+        {% endfor %}
+
+        <div style="margin-top:25px;">
+            <button type="submit" class="portal-button">
+                Save Classes Offered
+            </button>
+        </div>
+    </form>
+</div>
+
+
+    </section>
+
+</main>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const bankSelect = document.getElementById("settlement_bank_select");
+    const bankNameInput = document.getElementById("settlement_bank_name");
+
+    async function loadPaystackBanks() {
+        try {
+            const response = await fetch(
+                "{% url 'platform_owner_paystack_banks' %}"
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                bankSelect.innerHTML =
+                    '<option value="">Unable to load banks</option>';
+                return;
+            }
+
+            const savedCode = bankCodeInput.value.trim();
+
+            bankSelect.innerHTML =
+                '<option value="">Select settlement bank</option>';
+
+            data.banks.forEach(function (bank) {
+                const option = document.createElement("option");
+
+                option.value = bank.code;
+                option.textContent = bank.name;
+                option.dataset.bankName = bank.name;
+
+                if (String(bank.code) === String(savedCode)) {
+                    option.selected = true;
+                }
+
+                bankSelect.appendChild(option);
+            });
+
+        } catch (error) {
+            bankSelect.innerHTML =
+                '<option value="">Unable to load banks</option>';
+        }
+    }
+
+
+    const verifyButton = document.getElementById("verify-bank-account-button");
+    const bankCodeInput = document.getElementById("settlement_bank_code");
+    const accountNumberInput = document.getElementById("settlement_account_number");
+    const accountNameInput = document.getElementById("settlement_account_name");
+    const messageBox = document.getElementById("bank-verification-message");
+
+    if (!verifyButton || !bankCodeInput || !accountNumberInput || !accountNameInput) {
+        return;
+    }
+
+    verifyButton.addEventListener("click", async function () {
+        const bankCode = bankCodeInput.value.trim();
+        const accountNumber = accountNumberInput.value.trim();
+
+        accountNameInput.value = "";
+        messageBox.textContent = "";
+
+        if (!bankCode || !accountNumber) {
+            messageBox.textContent =
+                "Please enter the bank code and account number.";
+            return;
+        }
+
+        verifyButton.disabled = true;
+        verifyButton.textContent = "Verifying...";
+        messageBox.textContent = "Checking account details...";
+
+        const csrfInput = document.querySelector(
+            'input[name="csrfmiddlewaretoken"]'
+        );
+
+        if (!csrfInput) {
+            messageBox.textContent =
+                "Security token missing. Please refresh the page.";
+            verifyButton.disabled = false;
+            verifyButton.textContent = "Verify Account";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("bank_code", bankCode);
+        formData.append("account_number", accountNumber);
+
+        try {
+            const response = await fetch(
+                "{% url 'platform_owner_verify_bank_account' school.id %}",
+                {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfInput.value
+                    },
+                    body: formData
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                messageBox.textContent =
+                    data.message || "Account verification failed.";
+                return;
+            }
+
+            accountNameInput.value = data.account_name;
+            messageBox.textContent =
+                "✓ Account verified successfully.";
+
+        } catch (error) {
+            messageBox.textContent =
+                "Unable to verify the account right now. Please try again.";
+        } finally {
+            verifyButton.disabled = false;
+            verifyButton.textContent = "Verify Account";
+        }
+    });
+
+    bankSelect.addEventListener("change", function () {
+        const selected =
+            bankSelect.options[bankSelect.selectedIndex];
+
+        bankCodeInput.value = selected ? selected.value : "";
+        bankNameInput.value =
+            selected && selected.dataset.bankName
+                ? selected.dataset.bankName
+                : "";
+
+        accountNameInput.value = "";
+        messageBox.textContent = "";
+    });
+
+    accountNumberInput.addEventListener("input", function () {
+        accountNameInput.value = "";
+        messageBox.textContent = "";
+    });
+
+    loadPaystackBanks();
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const primary = document.getElementById("primary_color");
+    const secondary = document.getElementById("secondary_color");
+    const primaryValue = document.getElementById("primaryValue");
+    const secondaryValue = document.getElementById("secondaryValue");
+    const preview = document.getElementById("brandingPreview");
+
+    function refreshBrandingPreview() {
+        if (!primary || !secondary || !preview) return;
+
+        primaryValue.textContent = primary.value.toUpperCase();
+        secondaryValue.textContent = secondary.value.toUpperCase();
+
+        preview.style.backgroundColor = primary.value;
+        preview.style.color = secondary.value;
+    }
+
+    if (primary) primary.addEventListener("input", refreshBrandingPreview);
+    if (secondary) secondary.addEventListener("input", refreshBrandingPreview);
+});
+</script>
+
+</body>
+</html>

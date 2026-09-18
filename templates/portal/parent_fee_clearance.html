@@ -1,0 +1,187 @@
+{% load static %}
+{% load money %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Fee Clearance | {{ student.full_name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+    <style>
+        .clearance-card {
+            background: white;
+            border: 1px solid #d9e1ee;
+            border-radius: 18px;
+            padding: 30px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .clearance-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid #edf1f7;
+        }
+
+        .clearance-row:last-child {
+            border-bottom: none;
+        }
+
+        .clearance-status {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 999px;
+            background: #e8f7ee;
+            font-weight: 700;
+        }
+
+        .clearance-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        @media print {
+            .portal-header,
+            .clearance-actions {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
+
+            .hero {
+                padding: 0;
+            }
+
+            .hero-content {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ student.school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a
+            href="/parent/student/{{ student.uuid }}/fees/"
+            class="admin-link"
+        >
+            Back to Fees
+        </a>
+
+        <a
+            href="/parent/logout/"
+            class="admin-link"
+        >
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            SCHOOL FEE CLEARANCE
+        </span>
+
+        <h1>School Fee Clearance</h1>
+
+        <p>
+            Official confirmation of full school fee payment.
+        </p>
+
+        <div class="clearance-card">
+
+            <div class="clearance-row">
+                <strong>Status</strong>
+                <span class="clearance-status">
+                    FULLY PAID
+                </span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Student</strong>
+                <span>{{ student.full_name }}</span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Admission Number</strong>
+                <span>{{ student.admission_number }}</span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Class</strong>
+                <span>{{ student.current_class.display_name }}</span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Session</strong>
+                <span>{{ fee_structure.session.name }}</span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Term</strong>
+                <span>{{ fee_structure.term.get_name_display }}</span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Total School Fee</strong>
+                <span>{{ total_fee|naira }}</span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Total Paid</strong>
+                <span>{{ total_paid|naira }}</span>
+            </div>
+
+            <div class="clearance-row">
+                <strong>Outstanding Balance</strong>
+                <span>₦0.00</span>
+            </div>
+
+        </div>
+
+        <div class="clearance-actions">
+
+            <button
+                type="button"
+                class="portal-button"
+                onclick="window.print()"
+            >
+                Save / Print Clearance
+            </button>
+
+            <a
+                href="/parent/student/{{ student.uuid }}/fees/"
+                class="portal-button secondary"
+            >
+                Back to School Fees
+            </a>
+
+        </div>
+
+    </section>
+</main>
+
+</body>
+</html>

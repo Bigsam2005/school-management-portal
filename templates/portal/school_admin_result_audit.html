@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Audit History | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/results/" class="admin-link">Results</a>
+        <a href="/school-admin/dashboard/" class="admin-link">Dashboard</a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content" style="max-width:1200px;">
+
+        <span class="hero-badge">RESULT SECURITY</span>
+
+        <h1>Result Audit History</h1>
+
+        <p>
+            Review result changes made by teachers before publication.
+        </p>
+
+        <div class="child-card" style="margin-top:25px; text-align:left;">
+
+            {% if audit_logs %}
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; min-width:1050px;">
+
+                    <thead>
+                        <tr style="text-align:left;">
+                            <th style="padding:12px;">Date / Time</th>
+                            <th style="padding:12px;">Teacher</th>
+                            <th style="padding:12px;">Student</th>
+                            <th style="padding:12px;">Class</th>
+                            <th style="padding:12px;">Subject</th>
+                            <th style="padding:12px;">Action</th>
+                            <th style="padding:12px;">Old CA</th>
+                            <th style="padding:12px;">New CA</th>
+                            <th style="padding:12px;">Old Exam</th>
+                            <th style="padding:12px;">New Exam</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for log in audit_logs %}
+                        <tr style="border-top:1px solid #ddd;">
+
+                            <td style="padding:12px;">
+                                {{ log.changed_at|date:"d M Y, h:i A" }}
+                            </td>
+
+                            <td style="padding:12px;">
+                                {% if log.changed_by %}
+                                    {{ log.changed_by.first_name }}
+                                    {{ log.changed_by.last_name }}
+                                {% else %}
+                                    Unknown
+                                {% endif %}
+                            </td>
+
+                            <td style="padding:12px;">
+                                {{ log.result.student.full_name }}
+                            </td>
+
+                            <td style="padding:12px;">
+                                {{ log.result.school_class.display_name }}
+                            </td>
+
+                            <td style="padding:12px;">
+                                {{ log.result.subject.name }}
+                            </td>
+
+                            <td style="padding:12px;">
+                                <strong>{{ log.get_action_display }}</strong>
+                            </td>
+
+                            <td style="padding:12px;">
+                                {% if log.old_ca_score != None %}
+                                    {{ log.old_ca_score }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td style="padding:12px;">
+                                {{ log.new_ca_score }}
+                            </td>
+
+                            <td style="padding:12px;">
+                                {% if log.old_exam_score != None %}
+                                    {{ log.old_exam_score }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td style="padding:12px;">
+                                {{ log.new_exam_score }}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            {% else %}
+
+            <h3>No Result Changes Yet</h3>
+            <p>
+                Result activity will appear here when teachers create or edit scores.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ school.name }} | School Admin</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+
+<style>
+:root {
+    --school-primary: {{ school.primary_color|default:"#173b73" }};
+    --school-secondary: #ffffff;
+}
+</style>
+
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/" class="admin-link">
+            Home
+        </a>
+
+        <a href="/school-admin/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            SCHOOL ADMIN DASHBOARD
+        </span>
+
+        <h1>
+            Welcome to {{ school.name }}
+        </h1>
+
+        <p>
+            Manage students, school fees, results, teachers and parent communication.
+        </p>
+
+        <div class="portal-options">
+
+            <a href="/school-admin/students/" class="portal-button">
+                Students
+            </a>
+
+            <a href="{% url 'school_admin_fees' %}" class="portal-button secondary">
+            School Fees
+        </a>
+
+            <a href="/school-admin/results/" class="portal-button secondary">
+                Results
+            </a>
+
+            <a href="/school-admin/academic-year/" class="portal-button secondary">
+                Academic Year
+            </a>
+            <a href="/school-admin/subjects/" class="portal-button secondary">
+                Subjects
+            </a>
+
+            <a href="/school-admin/teachers/" class="portal-button secondary">
+                Teachers
+            </a>
+
+            <a href="{% url 'school_admin_parents' %}" class="portal-button secondary">
+                Parents
+            </a>
+
+            <a href="{% url 'school_admin_messages' %}" class="portal-button secondary">Messages</a>
+
+        </div>
+
+        <div class="children-list">
+
+            <div class="child-card">
+                <h3>Total Students</h3>
+                <p><strong>{{ student_count }}</strong></p>
+            </div>
+
+            <div class="child-card">
+                <h3>School Sections</h3>
+                <p><strong>{{ section_count }}</strong></p>
+            </div>
+
+            <div class="child-card">
+                <h3>Subscription</h3>
+                <p><strong>{{ school.get_subscription_plan_display }}</strong></p>
+            </div>
+
+        </div>
+
+    </section>
+</main>
+
+</body>
+</html>

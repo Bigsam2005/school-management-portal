@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    Payment Receipt | {{ student.full_name }}
+</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #0f172a;
+}
+
+.topbar {
+    background: var(--school-primary);
+    color: white;
+    padding: 20px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar h2 {
+    margin: 0;
+}
+
+.topbar a {
+    color: white;
+    text-decoration: none;
+    border: 1px solid #dbeafe;
+    padding: 10px 16px;
+    border-radius: 8px;
+}
+
+.page {
+    width: min(760px, 94%);
+    margin: 35px auto;
+}
+
+.receipt {
+    background: white;
+    border-radius: 18px;
+    padding: 35px;
+    box-shadow: 0 8px 30px rgba(15,23,42,.08);
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 22px;
+    margin-bottom: 25px;
+}
+
+.receipt-header h1 {
+    margin-bottom: 8px;
+    color: var(--school-primary);
+}
+
+.receipt-header p {
+    margin: 5px 0;
+    color: #64748b;
+}
+
+.badge {
+    display: inline-block;
+    background: #dcfce7;
+    color: #166534;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 25px;
+    margin-bottom: 28px;
+}
+
+.item {
+    padding-bottom: 11px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.item small {
+    display: block;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+.item strong {
+    word-break: break-word;
+}
+
+.amount-box {
+    background: #f8fafc;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.amount-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.total {
+    border-top: 2px solid #cbd5e1;
+    margin-top: 8px;
+    padding-top: 16px;
+    font-size: 20px;
+    color: var(--school-primary);
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 28px;
+}
+
+.btn {
+    border: 0;
+    background: var(--school-primary);
+    color: white;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn.secondary {
+    background: #e9eff8;
+    color: #163f77;
+}
+
+.footer {
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 25px;
+}
+
+@media(max-width: 600px) {
+
+    .details {
+        grid-template-columns: 1fr;
+    }
+
+    .receipt {
+        padding: 22px;
+    }
+
+    .topbar {
+        padding: 17px;
+    }
+
+}
+
+@media print {
+
+    body {
+        background: white;
+    }
+
+    .topbar,
+    .actions {
+        display: none !important;
+    }
+
+    .page {
+        width: 100%;
+        margin: 0;
+    }
+
+    .receipt {
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+}
+
+</style>
+
+
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <h2>{{ school.name }}</h2>
+
+    <a
+        href="{% url 'school_admin_student_payment_detail' school_class.id student.uuid %}"
+    >
+        Back
+    </a>
+
+</div>
+
+
+<div class="page">
+
+<div class="receipt">
+
+    <div class="receipt-header">
+
+        <h1>{{ school.name }}</h1>
+
+        <p>Official School Fee Payment Receipt</p>
+
+        <span class="badge">
+            PAYMENT CONFIRMED
+        </span>
+
+    </div>
+
+
+    <div class="details">
+
+        <div class="item">
+            <small>Student</small>
+            <strong>{{ student.full_name }}</strong>
+        </div>
+
+        <div class="item">
+            <small>Admission Number</small>
+            <strong>{{ student.admission_number }}</strong>
+        </div>
+
+        <div class="item">
+            <small>Class</small>
+            <strong>{{ school_class.display_name }}</strong>
+        </div>
+
+        <div class="item">
+            <small>Academic Period</small>
+            <strong>
+                {{ session.name }} —
+                {{ term.get_name_display }}
+            </strong>
+        </div>
+
+        <div class="item">
+            <small>Payment Reference</small>
+            <strong>{{ payment.reference }}</strong>
+        </div>
+
+        <div class="item">
+            <small>Payment Date</small>
+            <strong>
+                {{ payment.paid_at|date:"d M Y, g:i A" }}
+            </strong>
+        </div>
+
+    </div>
+
+
+    <div class="amount-box">
+
+        <div class="amount-row">
+            <span>School Fee Payment</span>
+            <strong>₦{{ payment_amount }}</strong>
+        </div>
+
+        <div class="amount-row">
+            <span>Transaction / Portal Charge</span>
+            <strong>₦{{ service_fee }}</strong>
+        </div>
+
+        <div class="amount-row total">
+            <strong>Total Charged</strong>
+            <strong>₦{{ total_charged }}</strong>
+        </div>
+
+    </div>
+
+
+    <div class="actions">
+
+        <button
+            class="btn"
+            onclick="window.print()"
+        >
+            Print / Save Receipt
+        </button>
+
+        <a
+            class="btn secondary"
+            href="{% url 'school_admin_student_payment_detail' school_class.id student.uuid %}"
+        >
+            Back to Payment History
+        </a>
+
+    </div>
+
+
+    <div class="footer">
+
+        Receipt generated from {{ school.name }} school portal.
+
+        <br>
+
+        Reference: {{ payment.reference }}
+
+    </div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

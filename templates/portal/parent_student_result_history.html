@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Result History | {{ student.full_name }}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'portal/style.css' %}"
+    >
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a
+            href="/parent/dashboard/"
+            class="admin-link"
+        >
+            Dashboard
+        </a>
+
+        <a
+            href="/parent/logout/"
+            class="admin-link"
+        >
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            RESULT HISTORY
+        </span>
+
+        <h1>
+            {{ student.full_name }}
+        </h1>
+
+        <p>
+            {{ student.admission_number }}
+        </p>
+
+        {% if publications %}
+
+            <div class="children-list">
+
+                {% for publication in publications %}
+
+                    <div class="child-card" style="text-align:left;">
+
+                        <h3>
+                            {{ publication.session.name }}
+                            —
+                            {{ publication.term.get_name_display }}
+                        </h3>
+
+                        <p>
+                            <strong>Status:</strong>
+                            Published
+                        </p>
+
+                        {% if publication.published_at %}
+                            <p>
+                                <strong>Published:</strong>
+                                {{ publication.published_at|date:"j F Y" }}
+                            </p>
+                        {% endif %}
+
+                        {% if publication.next_term_resumption_date %}
+                            <p>
+                                <strong>Next Term Resumption:</strong>
+                                {{ publication.next_term_resumption_date|date:"j F Y" }}
+                            </p>
+                        {% endif %}
+
+                        <a
+                            href="/parent/student/{{ student.uuid }}/result/{{ publication.session.id }}/{{ publication.term.id }}/"
+                            class="portal-button"
+                        >
+                            View Result
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="child-card" style="margin-top:25px;">
+
+                <h3>
+                    No Published Results Yet
+                </h3>
+
+                <p>
+                    Published term results will appear here automatically.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Payment Status | {{ school.name }}
+    </title>
+
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #0f172a;
+        }
+
+        .topbar {
+            background: var(--school-primary);
+            color: white;
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar h2 {
+            margin: 0;
+        }
+
+        .topbar-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .topbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 17px;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+        }
+
+        .page {
+            width: min(1200px, 94%);
+            margin: 35px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 25px rgba(15,23,42,.06);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #eaf1ff;
+            color: #163f77;
+            padding: 8px 15px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .period {
+            margin-top: 20px;
+            padding: 17px;
+            background: #f8fafc;
+            border: 1px solid #dbe3ef;
+            border-radius: 11px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .summary-box {
+            border: 1px solid #dbe3ef;
+            border-radius: 13px;
+            padding: 20px;
+            background: #f8fafc;
+        }
+
+        .summary-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .summary-value {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1050px;
+        }
+
+        th {
+            background: var(--school-primary);
+            color: white;
+            text-align: left;
+            padding: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .paid {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .partial {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .unpaid {
+            color: #b91c1c;
+            font-weight: 700;
+        }
+
+        .view-btn {
+            display: inline-block;
+            text-decoration: none;
+            background: var(--school-primary);
+            color: white;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .disabled {
+            display: inline-block;
+            background: #e5e7eb;
+            color: #64748b;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: #64748b;
+        }
+
+        @media (max-width: 800px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .card {
+                padding: 19px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+    <h2>{{ school.name }}</h2>
+
+    <div class="topbar-links">
+        <a href="{% url 'school_admin_fees' %}">
+            School Fees
+        </a>
+
+        <a href="{% url 'school_admin_dashboard' %}">
+            Dashboard
+        </a>
+    </div>
+</div>
+
+
+<div class="page">
+
+    <div class="card">
+
+        <span class="badge">
+            PAYMENT / FEE STATUS
+        </span>
+
+        <h1>Class Payment Summary</h1>
+
+        {% if session and term %}
+            <div class="period">
+                <strong>Current Academic Period:</strong>
+                {{ session.name }}
+                —
+                {{ term.get_name_display }}
+            </div>
+        {% else %}
+            <div class="period">
+                No current academic session or term is available.
+            </div>
+        {% endif %}
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="summary-grid">
+
+            <div class="summary-box">
+                <div class="summary-label">
+                    Total Expected
+                </div>
+
+                <div class="summary-value">
+                    ₦{{ overall_expected }}
+                </div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-label">
+                    Total Collected
+                </div>
+
+                <div class="summary-value">
+                    ₦{{ overall_collected }}
+                </div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-label">
+                    Total Outstanding
+                </div>
+
+                <div class="summary-value">
+                    ₦{{ overall_outstanding }}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Classes</h2>
+
+        {% if class_rows %}
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Students</th>
+                            <th>Fee</th>
+                            <th>Fully Paid</th>
+                            <th>Part-paid</th>
+                            <th>Unpaid</th>
+                            <th>Expected</th>
+                            <th>Collected</th>
+                            <th>Outstanding</th>
+                            <th>Payments</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in class_rows %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ row.school_class.display_name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ row.student_count }}
+                                </td>
+
+                                <td>
+                                    {% if row.fee_structure %}
+                                        ₦{{ row.fee_amount }}
+                                    {% else %}
+                                        Not set
+                                    {% endif %}
+                                </td>
+
+                                <td class="paid">
+                                    {{ row.fully_paid }}
+                                </td>
+
+                                <td class="partial">
+                                    {{ row.part_paid }}
+                                </td>
+
+                                <td class="unpaid">
+                                    {{ row.unpaid }}
+                                </td>
+
+                                <td>
+                                    {% if row.fee_structure %}
+                                        ₦{{ row.expected }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if row.fee_structure %}
+                                        ₦{{ row.collected }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if row.fee_structure %}
+                                        ₦{{ row.outstanding }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if row.fee_structure %}
+                                        <a
+                                            class="view-btn"
+                                            href="{% url 'school_admin_class_payments' row.school_class.id %}"
+                                        >
+                                            View Payments
+                                        </a>
+                                    {% else %}
+                                        <span class="disabled">
+                                            Set Fee First
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty">
+                No active classes were found.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

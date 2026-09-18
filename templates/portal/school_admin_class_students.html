@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ school_class.display_name }} Students | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+    <style>
+        .class-page-wrap {
+            width: min(1180px, calc(100% - 40px));
+            margin: 40px auto 70px;
+        }
+
+        .class-header-card,
+        .search-card,
+        .students-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .class-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .class-header-card h1 {
+            margin: 10px 0 4px;
+            font-size: 36px;
+        }
+
+        .class-header-card p,
+        .search-card p {
+            margin: 0;
+            color: #52627a;
+        }
+
+        .student-search-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .student-search-row input {
+            flex: 1;
+            min-width: 0;
+            padding: 14px 16px;
+            border: 1px solid #ccd6e4;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 22px;
+        }
+
+        .student-card {
+            border: 1px solid #d8e0eb;
+            border-radius: 16px;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .student-card h3 {
+            margin: 0 0 14px;
+            font-size: 19px;
+        }
+
+        .student-card p {
+            margin: 9px 0;
+            color: #52627a;
+            line-height: 1.45;
+        }
+
+        .student-card strong {
+            color: #1d2b45;
+        }
+
+        .student-action {
+            display: block;
+            margin-top: 16px;
+            text-align: center;
+            text-decoration: none;
+            background: #eaf0f8;
+            color: #123d7a;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .empty-state {
+            padding: 28px;
+            text-align: center;
+            color: #617087;
+        }
+
+        @media (max-width: 900px) {
+            .student-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 620px) {
+            .class-page-wrap {
+                width: min(100% - 24px, 1180px);
+                margin-top: 22px;
+            }
+
+            .student-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .student-search-row {
+                flex-direction: column;
+            }
+
+            .class-header-card h1 {
+                font-size: 30px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">{{ school.name }}</div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/school-admin/students/" class="admin-link">All Classes</a>
+        <a href="/school-admin/dashboard/" class="admin-link">Dashboard</a>
+    </div>
+</header>
+
+<main class="class-page-wrap">
+
+    <section class="class-header-card">
+
+        <div class="class-header-top">
+
+            <div>
+                <span class="hero-badge">CLASS STUDENTS</span>
+
+                <h1>{{ school_class.display_name }}</h1>
+
+                <p>
+                    {{ student_count }}
+                    student{% if student_count != 1 %}s{% endif %}
+                    currently in this class.
+                </p>
+            </div>
+
+            <div>
+                <a href="/school-admin/students/add/" class="portal-button">
+                    Add Student
+                </a>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="search-card">
+
+        <h2 style="margin:0;">Find Student</h2>
+        <p>Search by student name or admission number.</p>
+
+        <form method="get" class="student-search-row">
+
+            <input
+                type="text"
+                name="q"
+                value="{{ query|default:'' }}"
+                placeholder="Search name or admission number"
+            >
+
+            <button type="submit" class="portal-button">
+                Search
+            </button>
+
+        </form>
+
+    </section>
+
+    <section class="students-card">
+
+        <h2 style="margin:0;">Students</h2>
+
+        {% if students %}
+
+            <div class="student-grid">
+
+                {% for student in students %}
+
+                    <div class="student-card">
+
+                        <h3>{{ student.full_name }}</h3>
+
+                        <p>
+                            <strong>Admission Number:</strong><br>
+                            {{ student.admission_number }}
+                        </p>
+
+                        <p>
+                            <strong>Gender:</strong>
+                            {{ student.get_gender_display }}
+                        </p>
+
+                        <p>
+                            <strong>Student Type:</strong>
+                            {{ student.get_student_type_display }}
+                        </p>
+
+                        <p>
+                            <strong>Status:</strong>
+                            {{ student.get_status_display }}
+                        </p>
+
+                        {% if student.current_class.section.name == "Senior Secondary" %}
+                            <p>
+                                <strong>Department:</strong>
+                                {% if student.department %}
+                                    {{ student.get_department_display }}
+                                {% else %}
+                                    Not Assigned
+                                {% endif %}
+                            </p>
+
+                            <a
+                                href="/school-admin/students/{{ student.uuid }}/department/"
+                                class="student-action"
+                            >
+                                Set Department
+                            </a>
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                No students are currently assigned to this class.
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,166 @@
+{% load static %}
+{% load money %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Fees | {{ student.full_name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="portal-header">
+    <div class="school-name">
+        {{ student.school.name }}
+    </div>
+
+    <div style="display:flex; gap:10px;">
+        <a href="/parent/dashboard/" class="admin-link">
+            Dashboard
+        </a>
+
+        <a href="/parent/logout/" class="admin-link">
+            Logout
+        </a>
+    </div>
+</header>
+
+<main class="hero">
+    <section class="hero-content">
+
+        <span class="hero-badge">
+            SCHOOL FEES
+        </span>
+
+        <h1>{{ student.full_name }}</h1>
+
+        <p>
+            Admission No: {{ student.admission_number }}
+            <br>
+            Class: {{ student.current_class.display_name }}
+        </p>
+
+        {% if fee_structure %}
+
+            <div class="child-card">
+
+                <h3>
+                    {{ fee_structure.session.name }}
+                    -
+                    {{ fee_structure.term.get_name_display }}
+                </h3>
+
+                <p>
+                    <strong>Fee:</strong>
+                    {{ total_fee|naira }}
+                </p>
+
+                <p>
+                    <strong>Amount Paid:</strong>
+                    {{ total_paid|naira }}
+                </p>
+
+                <p>
+                    <strong>Outstanding Balance:</strong>
+                    {{ balance|naira }}
+                </p>
+
+                {% if balance > 0 %}
+                    <div style="margin-top:20px;">
+                        <a
+                            href="/parent/student/{{ student.uuid }}/fees/pay/"
+                            class="portal-button"
+                        >
+                            Pay School Fees
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="child-card" style="margin-top:20px;">
+                        <strong>School fees fully paid.</strong>
+
+                        <div style="margin-top:15px;">
+                            <a
+                                href="/parent/student/{{ student.uuid }}/fees/clearance/"
+                                class="portal-button"
+                            >
+                                School Fee Clearance
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <div style="margin-top:25px; text-align:left;">
+
+                <h3>Payment History</h3>
+
+                {% if payments %}
+
+                    {% for payment in payments %}
+
+                        <div class="child-card" style="margin-top:12px;">
+
+                            <p>
+                                <strong>Amount:</strong>
+                                {{ payment.amount|naira }}
+                            </p>
+
+                            <p>
+                                <strong>Reference:</strong>
+                                {{ payment.reference }}
+                            </p>
+
+                            <p>
+                                <strong>Date:</strong>
+                                {{ payment.paid_at }}
+                            </p>
+
+                            <div style="margin-top:14px;">
+                                <a
+                                    href="/parent/student/{{ student.uuid }}/fees/receipt/{{ payment.id }}/"
+                                    class="portal-button secondary"
+                                >
+                                    View Receipt
+                                </a>
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="child-card" style="margin-top:12px;">
+                        <p>No payment has been recorded yet.</p>
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        {% else %}
+
+            <div class="child-card">
+                <h3>No school fee has been configured</h3>
+
+                <p>
+                    Please contact the school administration.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+</main>
+
+</body>
+</html>

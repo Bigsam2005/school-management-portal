@@ -1,0 +1,248 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | {{ school.name }}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+    <style>
+        :root {
+            --school-primary: {{ school.primary_color|default:"#173b73" }};
+            --school-secondary: {{ school.secondary_color|default:"#ffffff" }};
+        }
+    </style>
+
+    <style>
+        .messages-page {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 22px 50px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #d8dfeb;
+            border-radius: 18px;
+            padding: 28px;
+            margin-bottom: 22px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px;
+            border: 1px solid #ccd6e5;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .send-btn, .back-btn {
+            background: var(--school-primary);
+            color: white;
+            border: 0;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .sent-item {
+            border: 1px solid #d8dfeb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 14px;
+        }
+
+        .muted {
+            color: #647087;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="school-name">{{ school.name }}</div>
+
+    <div>
+        <a href="{% url 'school_admin_dashboard' %}" class="header-link">Dashboard</a>
+        <a href="{% url 'school_admin_logout' %}" class="header-link">Logout</a>
+    </div>
+</header>
+
+<main class="messages-page">
+
+    <div style="margin-bottom:18px;">
+        <a href="{% url 'school_admin_dashboard' %}" class="back-btn">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <section class="card">
+        <p class="muted">SCHOOL COMMUNICATION</p>
+        <h1>Messages</h1>
+        <p class="muted">
+            Send announcements or messages to parents.
+        </p>
+    </section>
+
+    <section class="card">
+
+        <h2>New Message</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="field">
+                <label>Send To</label>
+
+                <select name="target_type" id="target_type" required>
+                    <option value="ALL_PARENTS">All Parents</option>
+                    <option value="CLASS">Specific Class</option>
+                    <option value="PARENT">Individual Parent</option>
+                </select>
+            </div>
+
+            <div class="field hidden" id="class_wrap">
+                <label>Class</label>
+
+                <select name="target_class">
+                    <option value="">Select class</option>
+
+                    {% for class in classes %}
+                        <option value="{{ class.id }}">
+                            {{ class.display_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field hidden" id="parent_wrap">
+                <label>Parent</label>
+
+                <select name="target_parent">
+                    <option value="">Select parent</option>
+
+                    {% for parent in parents %}
+                        <option value="{{ parent.id }}">
+                            {{ parent.user.get_full_name|default:parent.user.phone }}
+                            — {{ parent.user.phone }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Subject</label>
+                <input type="text" name="subject" maxlength="200" required>
+            </div>
+
+            <div class="field">
+                <label>Message</label>
+                <textarea name="body" required></textarea>
+            </div>
+
+            <button type="submit" class="send-btn">
+                Send Message
+            </button>
+        </form>
+
+    </section>
+
+    <section class="card">
+
+        <h2>Sent Messages</h2>
+
+        {% if sent_messages %}
+
+            {% for item in sent_messages %}
+
+                <div class="sent-item">
+
+                    <strong>{{ item.subject }}</strong>
+
+                    <p>{{ item.body }}</p>
+
+                    <p class="muted">
+                        To:
+                        {% if item.target_type == "ALL_PARENTS" %}
+                            All Parents
+                        {% elif item.target_type == "CLASS" %}
+                            {{ item.target_class.display_name }}
+                        {% else %}
+                            {{ item.target_parent.user.get_full_name|default:item.target_parent.user.phone }}
+                        {% endif %}
+                    </p>
+
+                    <p class="muted">
+                        {{ item.created_at|date:"d M Y, H:i" }}
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="muted">
+                No messages have been sent yet.
+            </p>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+<script>
+const typeSelect = document.getElementById("target_type");
+const classWrap = document.getElementById("class_wrap");
+const parentWrap = document.getElementById("parent_wrap");
+
+function updateTargetFields() {
+    classWrap.classList.add("hidden");
+    parentWrap.classList.add("hidden");
+
+    if (typeSelect.value === "CLASS") {
+        classWrap.classList.remove("hidden");
+    }
+
+    if (typeSelect.value === "PARENT") {
+        parentWrap.classList.remove("hidden");
+    }
+}
+
+typeSelect.addEventListener("change", updateTargetFields);
+updateTargetFields();
+</script>
+
+</body>
+</html>
